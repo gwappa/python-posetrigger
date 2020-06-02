@@ -22,30 +22,6 @@
 # SOFTWARE.
 #
 
-import setuptools
-from labvideocapture import VERSION_STR
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
-
-setuptools.setup(
-    name='labvideocapture',
-    version=VERSION_STR,
-    description='lab video capturing program, based on PyQt.',
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url='https://github.com/gwappa/python-labvideocapture',
-    author='Keisuke Sehara',
-    author_email='keisuke.sehara@gmail.com',
-    license='MIT',
-    install_requires=['pyqtgraph', 'timedcapture'],
-    classifiers=[
-        'Development Status :: 3 - Alpha',
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3',
-        'Intended Audience :: Science/Research',
-        ],
-    packages=setuptools.find_packages(),
-    entry_points={
-    }
-)
+if __name__ == "__main__":
+    from . import run_main
+    run_main()
