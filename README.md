@@ -1,2 +1,3 @@
 # python-labcapture
-lab video capturing program
+
+lab video-capturing program, based on PyQt.
