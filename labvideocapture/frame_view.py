@@ -22,21 +22,33 @@
 # SOFTWARE.
 #
 
-VERSION_STR = "0.2.0"
+import numpy as _np
+from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
+import pyqtgraph as _pg
+from . import debug as _debug
 
-DEBUG = True
+def image_to_display(img):
+    if img.ndim == 3:
+        return img.transpose((1,0,2))
+    else:
+        return img.T
 
-def debug(msg, end="\n"):
-    import sys
-    if DEBUG == True:
-        print(msg, end=end, file=sys.stderr, flush=True)
+class FrameView(QtWidgets.QGraphicsView):
+    """a thin wrapper class that is used to display acquired frames.
+    the `update_with_image` method updates what is displayed.
+    """
+    def __init__(self, width, height, parent=None):
+        super().__init__(parent=parent)
+        self._width  = width
+        self._height = height
+        self._scene  = QtWidgets.QGraphicsScene()
+        self._image  = _pg.ImageItem(_np.zeros((width,height), dtype=_np.uint16))
 
-def run_main(camera_path="/dev/video0"):
-    from pyqtgraph.Qt import QtGui
-    app    = QtGui.QApplication([])
-    window = MainWidget(path=camera_path)
-    app.aboutToQuit.connect(window.teardown)
-    window.show()
-    QtGui.QApplication.instance().exec_()
+        self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self._scene.addItem(self._image)
+        self.setScene(self._scene)
 
-from .main_widget import MainWidget
+    def update_with_image(self, img):
+        self._image.setImage(image_to_display(img))
