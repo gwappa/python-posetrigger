@@ -24,6 +24,7 @@
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from . import camera_interface as _camera
 from . import acquisition_control as _actrl
+from . import storage_control as _sctrl
 from . import frame_view as _fview
 
 from . import debug as _debug
@@ -34,25 +35,30 @@ class MainWidget(QtGui.QWidget):
         super().__init__(parent)
         self._device  = _camera.load_device(path)
         self._camera  = _camera.CameraInterface(self._device)
-        self._control = _actrl.AcquisitionControl()
+        self._control = _actrl.AcquisitionControl(self._device)
+        self._storage = _sctrl.StorageControl()
         self._frame   = _fview.FrameView(self._camera.width, self._camera.height)
-        self._control.frameAcquired.connect(self._frame.update_with_image)
+        self._control.modeIsChanging.connect(self._frame.update_with_acquisition_mode)
+        self._control.modeIsChanging.connect(self._storage.update_with_acquisition_mode)
+        self._storage.statusUpdated.connect(self._control.show_storage_status)
         self._layout  = QtGui.QGridLayout()
-        self._layout.addWidget(self._frame,   0, 0, 2, 1)
+        self._layout.addWidget(self._frame,   0, 0, 3, 1)
         self._layout.addWidget(self._camera,  0, 1, 1, 2)
         self._layout.addWidget(self._control, 1, 1, 1, 2)
-        self._layout.addWidget(self._control.statuslabel, 2, 0)
-        self._layout.addWidget(self._control.focusbutton, 2, 1)
-        self._layout.addWidget(self._control.acquirebutton, 2, 2)
+        self._layout.addWidget(self._storage, 2, 1, 1, 2)
+        self._layout.addWidget(self._control.statuslabel, 3, 0)
+        self._layout.addWidget(self._control.focusbutton, 3, 1)
+        self._layout.addWidget(self._control.acquirebutton, 3, 2)
         self._layout.setColumnStretch(1, 1)
         self._layout.setColumnStretch(2, 1)
         self._layout.setColumnStretch(0, -1)
         self._layout.setRowStretch(0, 5)
-        self._layout.setRowStretch(1, 5)
-        self._layout.setRowStretch(2, 1)
+        self._layout.setRowStretch(1, 3)
+        self._layout.setRowStretch(2, 3)
+        self._layout.setRowStretch(3, 1)
         self.setLayout(self._layout)
         self.setWindowTitle("LabVideoCapture")
-        self.resize(960,540)
+        self.resize(1040,540)
 
     @property
     def camera(self):
@@ -68,3 +74,4 @@ class MainWidget(QtGui.QWidget):
 
     def teardown(self):
         self._camera.teardown()
+        self._storage.teardown()

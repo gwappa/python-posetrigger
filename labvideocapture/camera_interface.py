@@ -37,7 +37,6 @@ class CameraInterface(QtGui.QGroupBox):
         self._device   = device
 
         self._exposure = QtGui.QSpinBox()
-        self._exposure.setSuffix("us")
         self._exposure.setMinimum(1)
         self._exposure.setMaximum(1000000)
         self._exposure.setValue(self._device.exposure_us)
@@ -50,7 +49,7 @@ class CameraInterface(QtGui.QGroupBox):
         self._gain.valueChanged.connect(self.update_gain)
 
         self._layout = QtGui.QFormLayout()
-        self._layout.addRow("exposure", self._exposure)
+        self._layout.addRow("exposure (us)", self._exposure)
         self._layout.addRow("gain", self._gain)
         self.setLayout(self._layout)
 

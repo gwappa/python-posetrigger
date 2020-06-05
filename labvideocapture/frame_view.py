@@ -50,5 +50,11 @@ class FrameView(QtWidgets.QGraphicsView):
         self._scene.addItem(self._image)
         self.setScene(self._scene)
 
+    def update_with_acquisition_mode(self, mode, acq):
+        if mode == "":
+            acq.frameAcquired.disconnect(self.update_with_image)
+        else:
+            acq.frameAcquired.connect(self.update_with_image)
+
     def update_with_image(self, img):
         self._image.setImage(image_to_display(img))
