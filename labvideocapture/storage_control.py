@@ -23,7 +23,10 @@
 #
 
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
+from time import time as _now
 import datetime as _datetime
+import numpy as _np
+import bzar as _bzar
 from . import debug as _debug
 from . import acquisition_control as _actrl
 
@@ -35,13 +38,14 @@ class StorageControl(QtGui.QGroupBox):
     def __init__(self, parent=None):
         super().__init__("Storage", parent=parent)
         self._format = QtGui.QLineEdit(DEFAULT_FORMAT)
-        self._suffix = QtGui.QLabel(".mp4")
+        self._suffix = QtGui.QLabel(".npz")
         self._layout = QtGui.QFormLayout()
         self._layout.addRow("File-name format", self._format)
         self._layout.addRow("Suffix", self._suffix)
         self.setLayout(self._layout)
         self._path    = None
         self._out     = None
+        self._stamps  = None
         self._nframes = 0
 
     def update_with_acquisition_mode(self, mode, acquisition):
@@ -50,21 +54,25 @@ class StorageControl(QtGui.QGroupBox):
         elif mode == _actrl.LABEL_ACQUIRE:
             self._path = _datetime.datetime.now().strftime(self._format.text()) + self._suffix.text()
             _debug(f"opening storage: {self._path}")
+            self._stamps  = []
             self._out     = []
             self._nframes = 0
             acquisition.frameAcquired.connect(self.add_frame)
         else:
             self.close()
 
-    def add_frame(self, frame):
+    def add_frame(self, frame, timestamp):
+        self._stamps.append(timestamp)
+        self._out.append(_np.array(frame, copy=True))
         self._nframes += 1
         if self._nframes % 100 == 0:
-            self.statusUpdated.emit(f"acquired >{self._nframes} frames...")
+            self.statusUpdated.emit(f"collected >{self._nframes} frames...")
 
     def close(self):
         if self._out is not None:
             _debug(f"closing storage: {self._path}")
-            # TODO: close _out
+            with open(self._path, "wb") as out:
+                _np.savez(out, frames=_np.stack(self._out, axis=0), timestamps=_np.array(self._stamps))
             self._out  = None
             self._path = None
 

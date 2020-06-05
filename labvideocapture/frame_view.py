@@ -56,5 +56,5 @@ class FrameView(QtWidgets.QGraphicsView):
         else:
             acq.frameAcquired.connect(self.update_with_image)
 
-    def update_with_image(self, img):
+    def update_with_image(self, img, timestamp):
         self._image.setImage(image_to_display(img))

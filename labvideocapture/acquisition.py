@@ -23,6 +23,7 @@
 #
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 import numpy as _np
+from time import time as _now
 from . import debug as _debug
 
 DEFAULT_PRIORITY = QtCore.QThread.TimeCriticalPriority
@@ -52,21 +53,24 @@ class IntervalGeneration(QtCore.QThread):
         super().__init__(parent=parent)
         self._timer = QtCore.QTimer()
         self._timer.moveToThread(self)
+        self._timer.setTimerType(QtCore.Qt.PreciseTimer)
         self._timer.setSingleShot(False)
         self._timer.setInterval(interval_ms)
-        self.setPriority(QtCore.QThread.TimeCriticalPriority)
 
         acquisition.acquisitionStarting.connect(self.start)
         self.started.connect(self._timer.start)
+        self.started.connect(self.raise_priority)
         self._timer.timeout.connect(acquisition.trigger_capture)
         acquisition.acquisitionEnding.connect(self.quit)
         acquisition.acquisitionEnding.connect(self._timer.stop)
 
+    def raise_priority(self):
+        self.setPriority(QtCore.QThread.TimeCriticalPriority)
+
 class Acquisition(QtCore.QThread):
     """the class that governs acquisition from the camera."""
     acquisitionStarting = QtCore.pyqtSignal()
-
-    frameAcquired       = QtCore.pyqtSignal(_np.ndarray)
+    frameAcquired       = QtCore.pyqtSignal(_np.ndarray, float)
     acquisitionEnding   = QtCore.pyqtSignal()
 
     def __init__(self, device, priority=None, parent=None):
@@ -77,9 +81,11 @@ class Acquisition(QtCore.QThread):
         self._triggered   = QtCore.QWaitCondition() # used with _acquisition
         self._captured    = QtCore.QWaitCondition() # used with _acquisition
         self._toquit      = False # used with _acquisition
-        if priority is None:
-            priority = DEFAULT_PRIORITY
-        self.setPriority(priority)
+        self._priority    = DEFAULT_PRIORITY if priority is None else priority
+        self.started.connect(self.raise_priority)
+
+    def raise_priority(self):
+        self.setPriority(self._priority)
 
     def hold(self):
         """returns a context manager to lock the acqusition mutex."""
@@ -115,7 +121,8 @@ class Acquisition(QtCore.QThread):
                     self._captured.wakeAll()
                     return
                 self._acquisition.unlock()
-                self.frameAcquired.emit(self._device.read_frame())
+                frame = self._device.read_frame()
+                self.frameAcquired.emit(frame, _now())
                 self._acquisition.lock()
                 self._captured.wakeAll()
         finally:
