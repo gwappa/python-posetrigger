@@ -161,7 +161,6 @@ class Acquisition(QtCore.QThread):
         self._capture = False
         self._signal  = False
         self._update  = QtCore.QWaitCondition()
-        self.storage  = None
 
     @property
     def capturing(self):
@@ -241,6 +240,7 @@ class AcquisitionInterface(QtGui.QGroupBox):
         super().__init__("Acquisition", parent=None)
         self._model    = model
         self._mode     = "" # holds the current mode
+        self._storage  = None
         self.starting.connect(self._model.start_capture, type=QtCore.Qt.QueuedConnection)
         self.stopping.connect(self._model.stop_capture, type=QtCore.Qt.QueuedConnection)
         self._model.statusUpdated.connect(self.update_with_model, type=QtCore.Qt.QueuedConnection)
@@ -278,9 +278,9 @@ class AcquisitionInterface(QtGui.QGroupBox):
             pass
         else:
             if self._mode == "ACQUIRE":
-                self._model.storage.close()
-                self._model.frameAcquired.disconnect(self._model.storage.write)
-                self._model.storage = None
+                self._storage.close()
+                self._model.frameAcquired.disconnect(self._storage.write)
+                self._storage = None
             self._mode = ""
         self._label.setText("")
         self.statusUpdated.emit(self._mode)
@@ -298,8 +298,8 @@ class AcquisitionInterface(QtGui.QGroupBox):
 
     def start_acquisition(self):
         self._mode = "ACQUIRE"
-        self._model.storage = DefaultVideoWriter(self._filepath.text())
-        self._model.frameAcquired.connect(self._model.storage.write, type=QtCore.Qt.QueuedConnection)
+        self._storage = DefaultVideoWriter(self._filepath.text())
+        self._model.frameAcquired.connect(self._storage.write, type=QtCore.Qt.QueuedConnection)
         self.starting.emit()
 
     def stop_acquisition(self):
@@ -348,11 +348,14 @@ class RunButton(QtGui.QPushButton):
 class DefaultVideoWriter(QtCore.QObject):
     def __init__(self, path, parent=None):
         super().__init__(parent=parent)
-        self._out = _FFmpegWriter(path)
+        inputs = {"-input_format": "gray16le"}
+        outputs = {"-c:v": "libx264"}
+        self._out = _FFmpegWriter(path, inputdict=inputs, outputdict=outputs)
         debug(f"opened a writer for: {path}")
 
     def write(self, frame):
-        self._out.writeFrame(_np.stack([frame, frame, frame], axis=-1))
+        frame = _np.array(frame, copy=True)
+        self._out.writeFrame(frame)
 
     def close(self):
         if self._out is not None:
