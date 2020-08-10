@@ -23,7 +23,7 @@
 #
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 import numpy as _np
-from time import time as _now
+from timedcapture import timestamp as _now
 from . import debug as _debug
 
 DEFAULT_PRIORITY = QtCore.QThread.TimeCriticalPriority
@@ -77,7 +77,7 @@ class BusyWait(QtCore.QObject):
 class Acquisition(QtCore.QThread):
     """the class that governs acquisition from the camera."""
     acquisitionStarting = QtCore.pyqtSignal()
-    frameAcquired       = QtCore.pyqtSignal(_np.ndarray, dict, float, float)
+    frameAcquired       = QtCore.pyqtSignal(_np.ndarray, dict, float)
     acquisitionEnding   = QtCore.pyqtSignal()
 
     def __init__(self, device, priority=None, parent=None):
@@ -142,15 +142,14 @@ class Acquisition(QtCore.QThread):
                     self._captured.wakeAll()
                     return
                 self._acquisition.unlock()
-                # start = _now()
+                start = _now()
                 frame = self._device.read_frame()
-                start = end   = _now()
                 pose, status = self._evaluator(frame)
                 if pose is not None:
                     estimation = dict(pose=pose, status=status, pose_end=_now())
                 else:
                     estimation = {}
-                self.frameAcquired.emit(frame, estimation, start, end)
+                self.frameAcquired.emit(frame, estimation, start)
                 self._acquisition.lock()
                 self._captured.wakeAll()
         finally:
