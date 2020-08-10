@@ -23,7 +23,6 @@
 #
 
 from pathlib import Path
-from time import time as _now
 import numpy as _np
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from cv2 import resize as _resize, \
@@ -33,7 +32,7 @@ from . import debug as _debug
 from .expression import parse as _parse_expression, \
                         ParseError as _ParseError
 
-LOCATE_ON_GPU = False
+LOCATE_ON_GPU = True
 FRAME_WIDTH   = 640
 FRAME_HEIGHT  = 480
 RESIZE_WIDTH  = 320
@@ -101,13 +100,12 @@ class Evaluation(QtCore.QObject):
         if mode != "":
             # starting acquisition
             if self._session is not None:
-                acq.frameAcquired.connect(self.estimateFromFrame)
+                acq.setEvaluator(self.estimateFromFrame)
                 self._prepareBuffer(acq.width, acq.height)
             self.evaluationModeLocked.emit(True)
         else:
             # stopping acquisition
             if self._session is not None:
-                acq.frameAcquired.disconnect(self.estimateFromFrame)
                 self._clearBuffer()
             self.evaluationModeLocked.emit(False)
 
@@ -136,7 +134,7 @@ class Evaluation(QtCore.QObject):
                                                              self._resizedims,
                                                              interpolation=_INTER_NEAREST))
             pose[:,:2] = pose[:,:2] * self._scale
-            stamp = _now()
-            if self._evaluated == True:
-                self.statusUpdated.emit(self._expression(pose))
-            self.estimationUpdated.emit(pose, stamp)
+            status = self._expression(pose) if self._evaluated == True else None
+            return pose, status
+        else:
+            return None, None

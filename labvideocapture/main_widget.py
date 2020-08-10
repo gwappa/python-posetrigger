@@ -36,7 +36,6 @@ class MainWidget(QtGui.QWidget):
     """the main GUI consisting of camera interface, frame view and acquisition interface."""
     def __init__(self, path="/dev/video0", parent=None):
         super().__init__(parent)
-        # self._acqthread  = QtCore.QThread()
         self._device     = _camera.load_device(path)
         self._camera     = _camera.CameraInterface(self._device)
         self._control    = _actrl.AcquisitionControl(self._device)
@@ -46,7 +45,6 @@ class MainWidget(QtGui.QWidget):
         self._trigger    = _tctrl.TriggerControl()
         self._frame      = _fview.FrameView(self._camera.width, self._camera.height)
         # self._evalmodel.moveToThread(self._acqthread)
-        # self._storage.model.moveToThread(self._acqthread)
         self._connectComponents()
         self._layout  = QtGui.QGridLayout()
         self._layout.addWidget(self._frame,      0, 0, 5, 1)
@@ -81,7 +79,7 @@ class MainWidget(QtGui.QWidget):
         self._connectEvaluationToModel()
         self._connectEvaluationToFrame()
         self._connectEvaluationToTrigger()
-        self._connectEvaluationToStorage()
+        self._connectEvaluationModelToStorage()
         self._connectTriggerToModel()
 
     def _connectEvaluationToFrame(self):
@@ -99,9 +97,8 @@ class MainWidget(QtGui.QWidget):
     def _connectEvaluationToTrigger(self):
         self._evaluation.evaluationEnabled.connect(self._trigger.setTriggerable)
 
-    def _connectEvaluationToStorage(self):
-        self._evalmodel.bodypartsUpdated.connect(self._storage.updateWithBodyParts)
-        self._evalmodel.estimationUpdated.connect(self._storage.addPose)
+    def _connectEvaluationModelToStorage(self):
+        self._evalmodel.bodypartsUpdated.connect(self._storage.updateWithBodyParts, QtCore.Qt.QueuedConnection)
 
     def _connectTriggerToModel(self):
         self._evalmodel.statusUpdated.connect(self._trigger.updateOutput)
@@ -115,7 +112,5 @@ class MainWidget(QtGui.QWidget):
         return self._frame
 
     def teardown(self):
-        # self._acqthread.terminate()
-        # self._acqthread.wait()
         self._camera.teardown()
         self._storage.teardown()

@@ -41,13 +41,14 @@ class Storage(QtCore.QObject):
         self._format  = DEFAULT_FORMAT
         self._suffix  = DEFAULT_SUFFIX
 
-        self._path    = None
-        self._out     = None
-        self._frametime  = None
-        self._nframes = 0
-        self._bodyparts = None
-        self._posetime  = None
-        self._pose      = None
+        self._path       = None
+        self._out        = None
+        self._framestart = None
+        self._frameend   = None
+        self._nframes    = 0
+        self._bodyparts  = None
+        self._posetime   = None
+        self._pose       = None
 
     @property
     def format(self):
@@ -71,13 +72,14 @@ class Storage(QtCore.QObject):
         elif mode == _actrl.LABEL_ACQUIRE:
             self._path = _datetime.datetime.now().strftime(self._format) + self._suffix
             _debug(f"opening storage: {self._path}")
-            self._frametime  = []
+            self._framestart   = []
+            self._frameend     = []
             if self._bodyparts is not None:
                 self._posetime = []
                 self._pose     = []
             self._out     = []
             self._nframes = 0
-            acquisition.frameAcquired.connect(self.addFrame)
+            acquisition.frameAcquired.connect(self.addFrame, QtCore.Qt.QueuedConnection)
         else:
             self.close()
 
@@ -87,26 +89,27 @@ class Storage(QtCore.QObject):
         else:
             self._bodyparts = None
 
-    def addFrame(self, frame, timestamp):
-        self._frametime.append(timestamp)
+    def addFrame(self, frame, estimation, start, end):
+        self._framestart.append(start)
+        self._frameend.append(end)
         self._out.append(_np.array(frame, copy=True))
+        if self._pose is not None:
+            self._pose.append(estimation["pose"])
+            self._posetime.append(estimation["pose_end"])
         self._nframes += 1
         if self._nframes % 100 == 0:
             self.statusUpdated.emit(f"collected >{self._nframes} frames...")
 
-    def addPose(self, pose, timestamp):
-        if self._pose is not None:
-            self._pose.append(pose)
-            self._posetime.append(timestamp)
-
     def close(self):
         if self._out is not None:
             _debug(f"closing storage: {self._path}")
-            values = dict(frames=_np.stack(self._out, axis=0), timestamps=_np.array(self._frametime))
+            values = dict(frames=_np.stack(self._out, axis=0),
+                          frame_start=_np.array(self._framestart),
+                          frame_end=_np.array(self._frameend))
             if self._pose is not None:
                 values["bodyparts"] = self._bodyparts
                 values["pose"]      = _np.stack(self._pose, axis=0)
-                values["pose_timestamps"] = _np.array(self._posetime)
+                values["pose_end"] = _np.array(self._posetime)
             with open(self._path, "wb") as out:
                 _np.savez(out, **values)
             self._out       = None
@@ -125,7 +128,7 @@ class StorageControl(QtGui.QGroupBox):
         self.statusUpdated         = self._model.statusUpdated
         self.updateWithAcquisition = self._model.updateWithAcquisition
         self.updateWithBodyParts   = self._model.updateWithBodyParts
-        self.addPose               = self._model.addPose
+        self.teardown              = self._model.teardown
 
         self._format = QtGui.QLineEdit(self._model.format)
         self._suffix = QtGui.QLabel(self._model.suffix)

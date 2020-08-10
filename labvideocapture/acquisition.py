@@ -28,6 +28,9 @@ from . import debug as _debug
 
 DEFAULT_PRIORITY = QtCore.QThread.TimeCriticalPriority
 
+def no_evaluator(frame):
+    return None, None
+
 class _AcquisitionInterrupt:
     """a context-manager object to interact with an Acquisition object.
     it automatically locks and unlocks the acquisition mutex."""
@@ -60,17 +63,21 @@ class IntervalGeneration(QtCore.QThread):
         acquisition.acquisitionStarting.connect(self.start)
         self.started.connect(self._timer.start)
         self.started.connect(self.raise_priority)
-        self._timer.timeout.connect(acquisition.trigger_capture)
+        self._timer.timeout.connect(acquisition.trigger_capture, QtCore.Qt.DirectConnection)
         acquisition.acquisitionEnding.connect(self.quit)
         acquisition.acquisitionEnding.connect(self._timer.stop)
 
     def raise_priority(self):
         self.setPriority(QtCore.QThread.TimeCriticalPriority)
 
+class BusyWait(QtCore.QObject):
+    def __init__(self, interval_ms, acquisition, parent=None):
+        super().__init__(parent=parent)
+
 class Acquisition(QtCore.QThread):
     """the class that governs acquisition from the camera."""
     acquisitionStarting = QtCore.pyqtSignal()
-    frameAcquired       = QtCore.pyqtSignal(_np.ndarray, float)
+    frameAcquired       = QtCore.pyqtSignal(_np.ndarray, dict, float, float)
     acquisitionEnding   = QtCore.pyqtSignal()
 
     def __init__(self, device, priority=None, parent=None):
@@ -82,7 +89,9 @@ class Acquisition(QtCore.QThread):
         self._captured    = QtCore.QWaitCondition() # used with _acquisition
         self._toquit      = False # used with _acquisition
         self._priority    = DEFAULT_PRIORITY if priority is None else priority
-        self.started.connect(self.raise_priority)
+        # self.started.connect(self.raise_priority)
+
+        self._evaluator   = no_evaluator
 
     @property
     def width(self):
@@ -91,6 +100,9 @@ class Acquisition(QtCore.QThread):
     @property
     def height(self):
         return self._device.height
+
+    def setEvaluator(self, fun):
+        self._evaluator = fun if fun is not None else no_evaluator
 
     def raise_priority(self):
         self.setPriority(self._priority)
@@ -120,6 +132,7 @@ class Acquisition(QtCore.QThread):
         self._acquisition.lock()
         self._toquit = False
         self._device.start_capture()
+        self._device.read_frame()
         self.acquisitionStarting.emit()
         try:
             while True:
@@ -129,8 +142,15 @@ class Acquisition(QtCore.QThread):
                     self._captured.wakeAll()
                     return
                 self._acquisition.unlock()
+                # start = _now()
                 frame = self._device.read_frame()
-                self.frameAcquired.emit(frame, _now())
+                start = end   = _now()
+                pose, status = self._evaluator(frame)
+                if pose is not None:
+                    estimation = dict(pose=pose, status=status, pose_end=_now())
+                else:
+                    estimation = {}
+                self.frameAcquired.emit(frame, estimation, start, end)
                 self._acquisition.lock()
                 self._captured.wakeAll()
         finally:
