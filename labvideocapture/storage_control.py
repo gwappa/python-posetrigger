@@ -76,6 +76,7 @@ class Storage(QtCore.QObject):
             if self._bodyparts is not None:
                 self._posetime = []
                 self._pose     = []
+                self._status   = []
             self._out     = []
             self._nframes = 0
             acquisition.frameAcquired.connect(self.addFrame, QtCore.Qt.QueuedConnection)
@@ -93,7 +94,9 @@ class Storage(QtCore.QObject):
         self._out.append(_np.array(frame, copy=True))
         if self._pose is not None:
             self._pose.append(estimation["pose"])
-            self._posetime.append(estimation["pose_end"])
+            self._posetime.append(estimation["process_end"])
+            status = estimation["status"]
+            self._status.append(status if status is not None else False)
         self._nframes += 1
         if self._nframes % 100 == 0:
             self.statusUpdated.emit(f"collected >{self._nframes} frames...")
@@ -104,9 +107,10 @@ class Storage(QtCore.QObject):
             values = dict(frames=_np.stack(self._out, axis=0),
                           timestamps=_np.array(self._frametime))
             if self._pose is not None:
-                values["bodyparts"]   = self._bodyparts
-                values["pose"]        = _np.stack(self._pose, axis=0)
-                values["process_end"] = _np.array(self._posetime)
+                values["bodyparts"]      = self._bodyparts
+                values["pose"]           = _np.stack(self._pose, axis=0)
+                values["process_end"]    = _np.array(self._posetime)
+                values["trigger_status"] = _np.array(self._status)
             with open(self._path, "wb") as out:
                 _np.savez(out, **values)
             self._out       = None
@@ -114,6 +118,7 @@ class Storage(QtCore.QObject):
             self._path      = None
             self._posetime  = None
             self._pose      = None
+            self._status    = None
 
     def teardown(self):
         self.close()
