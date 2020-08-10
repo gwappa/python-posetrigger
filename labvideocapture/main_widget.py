@@ -36,6 +36,7 @@ class MainWidget(QtGui.QWidget):
     """the main GUI consisting of camera interface, frame view and acquisition interface."""
     def __init__(self, path="/dev/video0", parent=None):
         super().__init__(parent)
+        # self._acqthread  = QtCore.QThread()
         self._device     = _camera.load_device(path)
         self._camera     = _camera.CameraInterface(self._device)
         self._control    = _actrl.AcquisitionControl(self._device)
@@ -44,6 +45,9 @@ class MainWidget(QtGui.QWidget):
         self._evaluation = _ectrl.EvaluationControl()
         self._trigger    = _tctrl.TriggerControl()
         self._frame      = _fview.FrameView(self._camera.width, self._camera.height)
+        # self._camera.moveToThread(self._acqthread)
+        # self._evalmodel.moveToThread(self._acqthread)
+        # self._storage.moveToThread(self._acqthread)
         self._connectComponents()
         self._layout  = QtGui.QGridLayout()
         self._layout.addWidget(self._frame,      0, 0, 5, 1)
@@ -67,6 +71,7 @@ class MainWidget(QtGui.QWidget):
         self.setLayout(self._layout)
         self.setWindowTitle("LabVideoCapture")
         self.resize(1050,720)
+        # self._acqthread.start(QtCore.QThread.HighestPriority)
 
     def _connectComponents(self):
         self._control.modeIsChanging.connect(self._frame.updateWithAcquisition)
@@ -107,13 +112,11 @@ class MainWidget(QtGui.QWidget):
         return self._camera
 
     @property
-    def acquisition(self):
-        return self._acq
-
-    @property
     def frame(self):
         return self._frame
 
     def teardown(self):
+        # self._acqthread.terminate()
+        # self._acqthread.wait()
         self._camera.teardown()
         self._storage.teardown()

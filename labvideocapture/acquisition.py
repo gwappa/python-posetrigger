@@ -84,6 +84,14 @@ class Acquisition(QtCore.QThread):
         self._priority    = DEFAULT_PRIORITY if priority is None else priority
         self.started.connect(self.raise_priority)
 
+    @property
+    def width(self):
+        return self._device.width
+
+    @property
+    def height(self):
+        return self._device.height
+
     def raise_priority(self):
         self.setPriority(self._priority)
 

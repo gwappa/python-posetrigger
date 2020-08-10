@@ -58,8 +58,8 @@ class EvaluationControl(QtWidgets.QGroupBox):
         self.setLayout(self._layout)
 
     def lockControl(self, val: bool):
-        self._loader.setEnabled(val)
-        self._expr.enablebutton.setEnabled(val)
+        self._loader.setEnabled(not val)
+        self._expr.enablebutton.setEnabled(not val)
 
 class ProjectSelector(QtCore.QObject):
     """the object for selecting DLC project."""

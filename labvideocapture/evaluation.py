@@ -26,13 +26,17 @@ from pathlib import Path
 from time import time as _now
 import numpy as _np
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
+from cv2 import resize as _resize, \
+                INTER_NEAREST as _INTER_NEAREST
 import dlclib as _dlclib # TODO: make it optional
 from . import debug as _debug
 from .expression import parse as _parse_expression, \
                         ParseError as _ParseError
 
-LOCATE_ON_GPU = True
-FRAME_WIDTH   = 320
+LOCATE_ON_GPU = False
+FRAME_WIDTH   = 640
+FRAME_HEIGHT  = 480
+RESIZE_WIDTH  = 320
 
 def return_false(pose):
     return False
@@ -52,6 +56,10 @@ class Evaluation(QtCore.QObject):
         self._parts      = []
         self._session    = None
         self._expression = None
+        self._origshape  = None
+        self._buffer     = None
+        self._resizedims = None
+        self._scale      = 1
 
     def updateWithProject(self, path: str):
         if path == "":
@@ -94,16 +102,40 @@ class Evaluation(QtCore.QObject):
             # starting acquisition
             if self._session is not None:
                 acq.frameAcquired.connect(self.estimateFromFrame)
-            self.evaluationModeLocked.emit(False)
+                self._prepareBuffer(acq.width, acq.height)
+            self.evaluationModeLocked.emit(True)
         else:
             # stopping acquisition
             if self._session is not None:
                 acq.frameAcquired.disconnect(self.estimateFromFrame)
-            self.evaluationModeLocked.emit(True)
+                self._clearBuffer()
+            self.evaluationModeLocked.emit(False)
+
+    def _prepareBuffer(self, width, height):
+        self._origshape = (height, width, 1)
+        self._buffer    = _np.empty((height, width, 3), dtype=_np.uint8)
+        if RESIZE_WIDTH == width:
+            self._resizedims = (width, height)
+            self._scale      = 1
+        else:
+            self._scale      = width / RESIZE_WIDTH
+            self._resizedims = (RESIZE_WIDTH, int(height / self._scale))
+        self._session.get_pose(_resize(self._buffer,
+                                       self._resizedims,
+                                       interpolation=_INTER_NEAREST))
+
+    def _clearBuffer(self):
+        self._buffer     = None
+        self._resizedims = None
+        self._scale      = 1
 
     def estimateFromFrame(self, frame):
         if self._session is not None:
-            pose  = self._session.get_pose(frame) # TODO:resize to FRAME_WIDTH and coerce to uint8
+            self._buffer[:] = (frame / 256).reshape(self._origshape)
+            pose            = self._session.get_pose(_resize(self._buffer,
+                                                             self._resizedims,
+                                                             interpolation=_INTER_NEAREST))
+            pose[:,:2] = pose[:,:2] * self._scale
             stamp = _now()
             if self._evaluated == True:
                 self.statusUpdated.emit(self._expression(pose))

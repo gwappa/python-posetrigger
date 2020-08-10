@@ -81,15 +81,15 @@ class StorageControl(QtGui.QGroupBox):
             self.statusUpdated.emit(f"collected >{self._nframes} frames...")
 
     def addPose(self, pose, timestamp):
-        if self._bodyparts is not None:
+        if self._pose is not None:
             self._pose.append(pose)
             self._posetime.append(timestamp)
 
     def close(self):
         if self._out is not None:
             _debug(f"closing storage: {self._path}")
-            values = dict(frames=_np.stack(self._out, axis=0), timestamps=_np.array(self, _frametime))
-            if self._bodyparts is not None:
+            values = dict(frames=_np.stack(self._out, axis=0), timestamps=_np.array(self._frametime))
+            if self._pose is not None:
                 values["bodyparts"] = self._bodyparts
                 values["pose"]      = _np.stack(self._pose, axis=0)
                 values["pose_timestamps"] = _np.array(self._posetime)
