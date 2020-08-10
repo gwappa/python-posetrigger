@@ -45,16 +45,21 @@ class EvaluationControl(QtWidgets.QGroupBox):
         self.updateWithBodyParts  = self._expr.updateWithBodyParts
         self.cancelLoadingProject = self._loader.cancelLoadingProject
         self._loader.projectChanged.connect(self._expr.updateWithProject)
-        
+
         self._layout = QtGui.QGridLayout()
         self._layout.addWidget(self._loader.header, 1, 0)
         self._layout.addWidget(self._loader.field,  1, 1)
         self._layout.addWidget(self._loader.loadbutton, 1, 2)
-        self._layout.addWidget(self._expr.partdisplay, 2, 0, 1, 3)
-        self._layout.addWidget(self._expr.enablebutton, 3, 0, 1, 3)
+        self._layout.addWidget(self._loader.clearbutton, 1, 3)
+        self._layout.addWidget(self._expr.partdisplay, 2, 0, 1, 4)
+        self._layout.addWidget(self._expr.enablebutton, 3, 0, 1, 4)
         self._layout.addWidget(self._expr.header, 4, 0)
-        self._layout.addWidget(self._expr.editor, 4, 1, 1, 2)
+        self._layout.addWidget(self._expr.editor, 4, 1, 1, 3)
         self.setLayout(self._layout)
+
+    def lockControl(self, val: bool):
+        self._loader.setEnabled(val)
+        self._expr.enablebutton.setEnabled(val)
 
 class ProjectSelector(QtCore.QObject):
     """the object for selecting DLC project."""
@@ -67,10 +72,16 @@ class ProjectSelector(QtCore.QObject):
         self._header = QtWidgets.QLabel(labeltext)
         self._field  = QtWidgets.QLabel(self.NOT_SELECTED)
         self._load   = QtWidgets.QPushButton("Select...")
+        self._clear  = QtWidgets.QPushButton("Clear")
         self._path   = None
 
         self._load.clicked.connect(self.selectProjectByDialog)
+        self._clear.clicked.connect(self.confirmClear)
         self.updateUI()
+
+    def setEnabled(self, val: bool):
+        for widget in (self._header, self._field, self._load, self._clear):
+            widget.setEnabled(val)
 
     @property
     def header(self):
@@ -83,6 +94,14 @@ class ProjectSelector(QtCore.QObject):
     @property
     def loadbutton(self):
         return self._load
+
+    @property
+    def clearbutton(self):
+        return self._clear
+
+    def confirmClear(self):
+        # TODO: prompt confirmation
+        self.setProject(None)
 
     def updateUI(self):
         if self._path is not None:
@@ -102,11 +121,11 @@ class ProjectSelector(QtCore.QObject):
             # validate
             if not (path / "config.yaml").exists():
                 raise NotDLCProjectError(f"'{path.name}' does not seem to be a DLC project")
-            self._path = path
-            self.updateUI()
-            self.projectChanged.emit(str(path))
         else:
-            self.projectChanged.emit(None)
+            pass
+        self._path = path
+        self.updateUI()
+        self.projectChanged.emit(str(path) if path is not None else "")
 
     def selectProjectByDialog(self):
         path = QtWidgets.QFileDialog.getExistingDirectory(self._field,

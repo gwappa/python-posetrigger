@@ -46,7 +46,7 @@ class MainWidget(QtGui.QWidget):
         self._frame      = _fview.FrameView(self._camera.width, self._camera.height)
         self._connectComponents()
         self._layout  = QtGui.QGridLayout()
-        self._layout.addWidget(self._frame,      0, 0, 4, 1)
+        self._layout.addWidget(self._frame,      0, 0, 5, 1)
         self._layout.addWidget(self._camera,     0, 1, 1, 2)
         self._layout.addWidget(self._control,    1, 1, 1, 2)
         self._layout.addWidget(self._evaluation, 2, 1, 1, 2)
@@ -69,23 +69,35 @@ class MainWidget(QtGui.QWidget):
         self.resize(1050,720)
 
     def _connectComponents(self):
-        self._control.modeIsChanging.connect(self._frame.update_with_acquisition_mode)
-        self._control.modeIsChanging.connect(self._storage.update_with_acquisition_mode)
+        self._control.modeIsChanging.connect(self._frame.updateWithAcquisition)
+        self._control.modeIsChanging.connect(self._storage.updateWithAcquisition)
+        self._control.modeIsChanging.connect(self._evalmodel.updateWithAcquisition)
         self._storage.statusUpdated.connect(self._control.show_storage_status)
 
         self._connectEvaluationToModel()
+        self._connectEvaluationToFrame()
         self._connectEvaluationToTrigger()
+        self._connectEvaluationToStorage()
         self._connectTriggerToModel()
+
+    def _connectEvaluationToFrame(self):
+        self._evalmodel.bodypartsUpdated.connect(self._frame.registerBodyParts)
+        self._evalmodel.estimationUpdated.connect(self._frame.annotatePositions)
 
     def _connectEvaluationToModel(self):
         self._evaluation.DLCProjectChanged.connect(self._evalmodel.updateWithProject)
         self._evaluation.evaluationEnabled.connect(self._evalmodel.setEvaluationEnabled)
         self._evaluation.expressionChanged.connect(self._evalmodel.setExpression)
+        self._evalmodel.evaluationModeLocked.connect(self._evaluation.lockControl)
         self._evalmodel.bodypartsUpdated.connect(self._evaluation.updateWithBodyParts)
         self._evalmodel.errorOccurredOnLoading.connect(self._evaluation.cancelLoadingProject)
 
     def _connectEvaluationToTrigger(self):
         self._evaluation.evaluationEnabled.connect(self._trigger.setTriggerable)
+
+    def _connectEvaluationToStorage(self):
+        self._evalmodel.bodypartsUpdated.connect(self._storage.updateWithBodyParts)
+        self._evalmodel.estimationUpdated.connect(self._storage.addPose)
 
     def _connectTriggerToModel(self):
         self._evalmodel.statusUpdated.connect(self._trigger.updateOutput)

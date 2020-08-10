@@ -45,36 +45,60 @@ class StorageControl(QtGui.QGroupBox):
         self.setLayout(self._layout)
         self._path    = None
         self._out     = None
-        self._stamps  = None
+        self._frametime  = None
         self._nframes = 0
+        self._bodyparts = None
+        self._posetime  = None
+        self._pose      = None
 
-    def update_with_acquisition_mode(self, mode, acquisition):
+    def updateWithAcquisition(self, mode, acquisition):
         if mode == _actrl.LABEL_FOCUS:
             pass
         elif mode == _actrl.LABEL_ACQUIRE:
             self._path = _datetime.datetime.now().strftime(self._format.text()) + self._suffix.text()
             _debug(f"opening storage: {self._path}")
-            self._stamps  = []
+            self._frametime  = []
+            if self._bodyparts is not None:
+                self._posetime = []
+                self._pose     = []
             self._out     = []
             self._nframes = 0
-            acquisition.frameAcquired.connect(self.add_frame)
+            acquisition.frameAcquired.connect(self.addFrame)
         else:
             self.close()
 
-    def add_frame(self, frame, timestamp):
-        self._stamps.append(timestamp)
+    def updateWithBodyParts(self, parts):
+        if len(parts) > 0:
+            self._bodyparts = parts
+        else:
+            self._bodyparts = None
+
+    def addFrame(self, frame, timestamp):
+        self._frametime.append(timestamp)
         self._out.append(_np.array(frame, copy=True))
         self._nframes += 1
         if self._nframes % 100 == 0:
             self.statusUpdated.emit(f"collected >{self._nframes} frames...")
 
+    def addPose(self, pose, timestamp):
+        if self._bodyparts is not None:
+            self._pose.append(pose)
+            self._posetime.append(timestamp)
+
     def close(self):
         if self._out is not None:
             _debug(f"closing storage: {self._path}")
+            values = dict(frames=_np.stack(self._out, axis=0), timestamps=_np.array(self, _frametime))
+            if self._bodyparts is not None:
+                values["bodyparts"] = self._bodyparts
+                values["pose"]      = _np.stack(self._pose, axis=0)
+                values["pose_timestamps"] = _np.array(self._posetime)
             with open(self._path, "wb") as out:
-                _np.savez(out, frames=_np.stack(self._out, axis=0), timestamps=_np.array(self._stamps))
-            self._out  = None
-            self._path = None
+                _np.savez(out, **values)
+            self._out       = None
+            self._path      = None
+            self._posetime  = None
+            self._pose      = None
 
     def teardown(self):
         self.close()

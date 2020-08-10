@@ -35,14 +35,15 @@ def image_to_display(img):
 
 class FrameView(QtWidgets.QGraphicsView):
     """a thin wrapper class that is used to display acquired frames.
-    the `update_with_image` method updates what is displayed.
+    the `updateWithFrame` method updates what is displayed.
     """
     def __init__(self, width, height, parent=None):
         super().__init__(parent=parent)
-        self._width  = width
-        self._height = height
-        self._scene  = QtWidgets.QGraphicsScene()
-        self._image  = _pg.ImageItem(_np.zeros((width,height), dtype=_np.uint16))
+        self._width     = width
+        self._height    = height
+        self._scene     = QtWidgets.QGraphicsScene()
+        self._image     = _pg.ImageItem(_np.zeros((width,height), dtype=_np.uint16))
+        self._bodyparts = []
 
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -50,11 +51,19 @@ class FrameView(QtWidgets.QGraphicsView):
         self._scene.addItem(self._image)
         self.setScene(self._scene)
 
-    def update_with_acquisition_mode(self, mode, acq):
+    def updateWithAcquisition(self, mode, acq):
         if mode == "":
-            acq.frameAcquired.disconnect(self.update_with_image)
+            acq.frameAcquired.disconnect(self.updateWithFrame)
         else:
-            acq.frameAcquired.connect(self.update_with_image)
+            acq.frameAcquired.connect(self.updateWithFrame)
 
-    def update_with_image(self, img, timestamp):
+    def updateWithFrame(self, img, timestamp):
         self._image.setImage(image_to_display(img))
+
+    def registerBodyParts(self, parts):
+        # TODO: as annotation object
+        self._bodyparts = parts
+
+    def annotatePositions(self, pose, timestamp):
+        # TODO
+        pass
