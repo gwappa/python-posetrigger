@@ -32,6 +32,9 @@ DEFAULT_PRIORITY = QtCore.QThread.TimeCriticalPriority
 def no_evaluator(frame):
     return None, None
 
+def no_output(val):
+    pass
+
 class _AcquisitionInterrupt:
     """a context-manager object to interact with an Acquisition object.
     it automatically locks and unlocks the acquisition mutex."""
@@ -147,6 +150,7 @@ class Acquisition(QtCore.QThread):
         self._priority    = DEFAULT_PRIORITY if priority is None else priority
 
         self._evaluator   = no_evaluator
+        self._output      = no_output
 
     @property
     def width(self):
@@ -158,6 +162,9 @@ class Acquisition(QtCore.QThread):
 
     def setEvaluator(self, fun):
         self._evaluator = fun if fun is not None else no_evaluator
+
+    def setTriggerOutput(self, fun):
+        self._output    = fun if fun is not None else no_output
 
     def raise_priority(self):
         self.setPriority(self._priority)
@@ -201,7 +208,9 @@ class Acquisition(QtCore.QThread):
                 frame = self._device.read_frame()
                 pose, status = self._evaluator(frame)
                 if pose is not None:
-                    estimation = dict(pose=pose, status=status, pose_end=_now())
+                    if status is not None:
+                        self._output(status)
+                    estimation = dict(pose=pose, status=status, process_end=_now())
                 else:
                     estimation = {}
                 self.frameAcquired.emit(frame, estimation, start)
