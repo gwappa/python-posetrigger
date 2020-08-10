@@ -77,8 +77,8 @@ def parse(line_expr, bodyparts):
     def _run(estimation):
         return eval(expr, dict(math=_math, np=_np, __pred__=estimation), {})
     try:
-        ret = _run(_np.empty((n_parts, 3), dtype=_np.float64)*_np.nan)
-    except Exception as e:
+        ret = _run(_np.empty((len(bodyparts), 3), dtype=_np.float64)*_np.nan)
+    except BaseException as e:
         raise ParseError(f"{e}")
     if not bool_like(ret):
         raise ParseError(f"the expression does not return a boolean value but a {type(ret)}")

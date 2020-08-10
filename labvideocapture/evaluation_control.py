@@ -24,58 +24,36 @@
 
 from pathlib import Path
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
+import dlclib as _dlclib # TODO: make it optional
 from . import debug as _debug
+from .expression import parse as _parse_expression, \
+                        ParseError as _ParseError
 
 class NotDLCProjectError(ValueError):
     def __init__(self, msg):
         super().__init__(msg)
 
-class Evaluation(QtCore.QObject):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        self._evaluated = False
-        self._triggered = False
-
-    def updateWithProject(self, path: str):
-        if path is not None:
-            _debug(f"load DLC project: {path}")
-
-    def setEvaluationEnabled(self, val: bool):
-        _debug(f"evaluation --> {val}")
-        self._evaluated = val
-
-    def setExpression(self, expr):
-        _debug(f"expression --> {expr}")
-
-    def setTriggerEnabled(self, val: bool):
-        _debug(f"trigger --> {val}")
-        self._triggered = val
-
-
 class EvaluationControl(QtWidgets.QGroupBox):
     def __init__(self, parent=None):
-        super().__init__("Evaluation", parent=parent)
-        self._model    = Evaluation()
+        super().__init__("DeepLabCut Evaluation", parent=parent)
         self._loader   = ProjectSelector("DLC Project: ")
         self._expr     = EvaluationEditor()
-        self._feedback = FeedbackConfiguration()
+        self.DLCProjectChanged = self._loader.projectChanged
+        self.evaluationEnabled = self._expr.evaluationEnabled
+        self.expressionChanged = self._expr.expressionChanged
+
+        self.updateWithBodyParts  = self._expr.updateWithBodyParts
+        self.cancelLoadingProject = self._loader.cancelLoadingProject
         self._loader.projectChanged.connect(self._expr.updateWithProject)
-        self._loader.projectChanged.connect(self._model.updateWithProject)
-        self._expr.evaluationEnabled.connect(self._feedback.setTriggerable)
-        self._expr.evaluationEnabled.connect(self._model.setEvaluationEnabled)
-        self._expr.expressionChanged.connect(self._model.setExpression)
-        self._feedback.triggerEnabled.connect(self._model.setTriggerEnabled)
+        
         self._layout = QtGui.QGridLayout()
         self._layout.addWidget(self._loader.header, 1, 0)
         self._layout.addWidget(self._loader.field,  1, 1)
         self._layout.addWidget(self._loader.loadbutton, 1, 2)
-        self._layout.addWidget(self._expr.enablebutton, 2, 0, 1, 3)
-        self._layout.addWidget(self._expr.header, 3, 0)
-        self._layout.addWidget(self._expr.editor, 3, 1, 1, 2)
-        self._layout.addWidget(self._feedback.enablebutton, 4, 0, 1, 3)
-        self._layout.addWidget(self._feedback.header, 5, 0)
-        self._layout.addWidget(self._feedback.port, 5, 1)
-        self._layout.addWidget(self._feedback.test, 5, 2)
+        self._layout.addWidget(self._expr.partdisplay, 2, 0, 1, 3)
+        self._layout.addWidget(self._expr.enablebutton, 3, 0, 1, 3)
+        self._layout.addWidget(self._expr.header, 4, 0)
+        self._layout.addWidget(self._expr.editor, 4, 1, 1, 2)
         self.setLayout(self._layout)
 
 class ProjectSelector(QtCore.QObject):
@@ -119,13 +97,16 @@ class ProjectSelector(QtCore.QObject):
             widget.setEnabled(val)
 
     def setProject(self, path: str):
-        path = Path(path)
-        # validate
-        if not (path / "config.yaml").exists():
-            raise NotDLCProjectError(f"'{path.name}' does not seem to be a DLC project")
-        self._path = path
-        self.updateUI()
-        self.projectChanged.emit(str(path))
+        if path is not None:
+            path = Path(path)
+            # validate
+            if not (path / "config.yaml").exists():
+                raise NotDLCProjectError(f"'{path.name}' does not seem to be a DLC project")
+            self._path = path
+            self.updateUI()
+            self.projectChanged.emit(str(path))
+        else:
+            self.projectChanged.emit(None)
 
     def selectProjectByDialog(self):
         path = QtWidgets.QFileDialog.getExistingDirectory(self._field,
@@ -139,18 +120,30 @@ class ProjectSelector(QtCore.QObject):
         except NotDLCProjectError as e:
             QtWidgets.QMessageBox.warning(self._field, "Failed to select the directory", f"{e}")
 
+    def cancelLoadingProject(self, errorTitle, errorMsg):
+        QtWidgets.QMessageBox.warning(self._field, errorTitle, errorMsg)
+        self.setProject(None)
+
 class EvaluationEditor(QtCore.QObject):
     evaluationEnabled = QtCore.pyqtSignal(bool)
     expressionChanged = QtCore.pyqtSignal(object)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        self._bodyparts  = []
+        self._partdisplay = QtWidgets.QLabel("Body parts: <none>")
         self._enable = QtWidgets.QCheckBox("Enable evaluation")
         self._enable.setCheckState(QtCore.Qt.Unchecked)
         self._header = QtWidgets.QLabel("Expression: ")
         self._field  = QtWidgets.QLineEdit()
+
         self._enable.stateChanged.connect(self.updateUI)
+        self._field.returnPressed.connect(self.updateWithExpression)
         self.setEnabled(False)
+
+    @property
+    def partdisplay(self):
+        return self._partdisplay
 
     @property
     def enablebutton(self):
@@ -167,6 +160,26 @@ class EvaluationEditor(QtCore.QObject):
     def updateWithProject(self, path=None):
         self.setEnabled(path is not None)
 
+    def updateWithBodyParts(self, parts):
+        self._bodyparts = parts
+        displayed = "<none>" if len(parts) == 0 else ", ".join(str(part) for part in parts)
+        self._partdisplay.setText(f"Body parts: {displayed}")
+
+    def updateWithExpression(self):
+        content = self._field.text()
+        if len(content.strip()) == 0:
+            expr = None
+            self._field.setStyleSheet("color: black")
+        else:
+            try:
+                expr = _parse_expression(content, self._bodyparts)
+                self._field.setStyleSheet("color: black")
+            except _ParseError as e:
+                QtWidgets.QMessageBox.warning(self._field, "Failed to update expression", f"{e}")
+                self._field.setStyleSheet("color: red")
+                return
+        self.expressionChanged.emit(expr)
+
     def setEnabled(self, val: bool):
         self._enable.setEnabled(val)
         self.updateUI()
@@ -177,46 +190,3 @@ class EvaluationEditor(QtCore.QObject):
         for widget in (self._header, self._field):
             widget.setEnabled(status)
         self.evaluationEnabled.emit(status)
-
-class PortEditor(QtWidgets.QLineEdit):
-    def __init__(self, content, parent=None):
-        super().__init__(content, parent=parent)
-
-class FeedbackConfiguration(QtCore.QObject):
-    triggerEnabled = QtCore.pyqtSignal(bool)
-
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        self._enable = QtWidgets.QCheckBox("Enable trigger")
-        self._header = QtWidgets.QLabel("Trigger UDP port: ")
-        self._field  = PortEditor("6666")
-        self._tester = QtWidgets.QPushButton("Toggle Manually")
-        self._tester.setCheckable(True)
-        self._tester.setChecked(False)
-        self._enable.stateChanged.connect(self.update)
-        self.setTriggerable(False)
-
-    @property
-    def enablebutton(self):
-        return self._enable
-
-    @property
-    def header(self):
-        return self._header
-
-    @property
-    def port(self):
-        return self._field
-
-    @property
-    def test(self):
-        return self._tester
-
-    def setTriggerable(self, val: bool):
-        self._enable.setEnabled(val)
-        self.update()
-
-    def update(self, notused=None):
-        status = self._enable.isEnabled() and (self._enable.checkState() != QtCore.Qt.Unchecked)
-        self._tester.setEnabled(not status)
-        self.triggerEnabled.emit(status)
