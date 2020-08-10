@@ -44,7 +44,6 @@ class MainWidget(QtGui.QWidget):
         self._evaluation = _ectrl.EvaluationControl()
         self._trigger    = _tctrl.TriggerControl()
         self._frame      = _fview.FrameView(self._camera.width, self._camera.height)
-        # self._evalmodel.moveToThread(self._acqthread)
         self._connectComponents()
         self._layout  = QtGui.QGridLayout()
         self._layout.addWidget(self._frame,      0, 0, 5, 1)
@@ -68,7 +67,6 @@ class MainWidget(QtGui.QWidget):
         self.setLayout(self._layout)
         self.setWindowTitle("LabVideoCapture")
         self.resize(1200,720)
-        # self._acqthread.start(QtCore.QThread.HighestPriority)
 
     def _connectComponents(self):
         self._control.modeIsChanging.connect(self._frame.updateWithAcquisition)
