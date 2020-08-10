@@ -108,7 +108,7 @@ class Storage(QtCore.QObject):
                           timestamps=_np.array(self._frametime))
             if self._pose is not None:
                 values["bodyparts"]      = self._bodyparts
-                values["pose"]           = _np.stack(self._pose, axis=0)
+                values["estimation"]     = _np.stack(self._pose, axis=0)
                 values["process_end"]    = _np.array(self._posetime)
                 values["trigger_status"] = _np.array(self._status)
             with open(self._path, "wb") as out:
