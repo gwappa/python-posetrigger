@@ -28,7 +28,7 @@ from . import acquisition as _acquisition
 
 LABEL_FOCUS      = "FOCUS"
 LABEL_ACQUIRE    = "ACQUIRE"
-DEFAULT_INTERVAL = 11
+DEFAULT_INTERVAL = 10
 
 class AcquisitionControl(QtGui.QGroupBox):
     modeIsChanging = QtCore.pyqtSignal(str, object)
