@@ -57,13 +57,10 @@ class FrameView(QtWidgets.QGraphicsView):
         else:
             acq.frameAcquired.connect(self.updateWithFrame)
 
-    def updateWithFrame(self, img, timestamp):
+    def updateWithFrame(self, img, estimation, timestamp):
         self._image.setImage(image_to_display(img))
+        # TODO: annotate positions, if any
 
     def registerBodyParts(self, parts):
         # TODO: as annotation object
         self._bodyparts = parts
-
-    def annotatePositions(self, pose, timestamp):
-        # TODO
-        pass

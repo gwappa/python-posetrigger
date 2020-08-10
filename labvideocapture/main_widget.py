@@ -72,17 +72,16 @@ class MainWidget(QtGui.QWidget):
         self._control.modeIsChanging.connect(self._frame.updateWithAcquisition)
         self._control.modeIsChanging.connect(self._storage.updateWithAcquisition)
         self._control.modeIsChanging.connect(self._evalmodel.updateWithAcquisition)
+        self._control.modeIsChanging.connect(self._trigger.updateWithAcquisition)
         self._storage.statusUpdated.connect(self._control.show_storage_status)
 
         self._connectEvaluationToModel()
         self._connectEvaluationToFrame()
         self._connectEvaluationToTrigger()
         self._connectEvaluationModelToStorage()
-        self._connectTriggerToModel()
 
     def _connectEvaluationToFrame(self):
         self._evalmodel.bodypartsUpdated.connect(self._frame.registerBodyParts)
-        self._evalmodel.estimationUpdated.connect(self._frame.annotatePositions)
 
     def _connectEvaluationToModel(self):
         self._evaluation.DLCProjectChanged.connect(self._evalmodel.updateWithProject)
@@ -97,9 +96,6 @@ class MainWidget(QtGui.QWidget):
 
     def _connectEvaluationModelToStorage(self):
         self._evalmodel.bodypartsUpdated.connect(self._storage.updateWithBodyParts, QtCore.Qt.QueuedConnection)
-
-    def _connectTriggerToModel(self):
-        self._evalmodel.statusUpdated.connect(self._trigger.updateOutput)
 
     @property
     def camera(self):
