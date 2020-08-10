@@ -28,7 +28,7 @@ from . import acquisition as _acquisition
 
 LABEL_FOCUS      = "FOCUS"
 LABEL_ACQUIRE    = "ACQUIRE"
-DEFAULT_INTERVAL = 12
+DEFAULT_INTERVAL = 11
 
 class AcquisitionControl(QtGui.QGroupBox):
     modeIsChanging = QtCore.pyqtSignal(str, object)
@@ -86,7 +86,9 @@ class AcquisitionControl(QtGui.QGroupBox):
         self._acq.wait();
         self.modeIsChanging.emit(self._mode, self._acq)
         self._acq = None
-        self._timing.wait(); self._timing = None
+        self._timing.quit()
+        self._timing.wait()
+        self._timing = None
         self.statusUpdated.emit(self._mode)
 
     def process_start(self, mode):
@@ -99,7 +101,7 @@ class AcquisitionControl(QtGui.QGroupBox):
         self._mode   = mode
         self._acq    = _acquisition.Acquisition(self._device)
         self.modeIsChanging.emit(self._mode, self._acq)
-        self._timing = _acquisition.IntervalGeneration(self._interval.value(), self._acq)
+        self._timing = _acquisition.BusyWait(self._interval.value(), self._acq)
         self._acq.acquisitionStarting.connect(self.flag_acquisition_started)
         self._acq.acquisitionEnding.connect(self.revert_to_idle)
         self._acq.start()
@@ -133,25 +135,25 @@ class RunButton(QtGui.QPushButton):
 
     def emit_request(self, checked):
         if self.text() == self._basetext:
-            _debug(f"starting: {self._basetext}")
+            # _debug(f"starting: {self._basetext}")
             self.startRequested.emit(self._basetext)
         else:
-            _debug(f"stopping: {self._basetext}")
+            # _debug(f"stopping: {self._basetext}")
             self.stopRequested.emit(self._basetext)
         # wait for the other processes to update the status
         self.setChecked(not checked)
 
     def set_status(self, status):
         if status == self._basetext:
-            _debug(f"{self._basetext} started")
+            # _debug(f"{self._basetext} started")
             self.setEnabled(True)
             self.setText(self._alttext)
             self.setChecked(True)
         elif len(status) == 0:
-            _debug(f"{self._basetext}: reverting to base status")
+            # _debug(f"{self._basetext}: reverting to base status")
             self.setEnabled(True)
             self.setText(self._basetext)
             self.setChecked(False)
         else:
-            _debug(f"disabling {self._basetext}")
+            # _debug(f"disabling {self._basetext}")
             self.setEnabled(False)

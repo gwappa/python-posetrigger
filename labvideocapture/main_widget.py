@@ -67,7 +67,7 @@ class MainWidget(QtGui.QWidget):
         self._layout.setRowStretch(5, 1)
         self.setLayout(self._layout)
         self.setWindowTitle("LabVideoCapture")
-        self.resize(1050,720)
+        self.resize(1200,720)
         # self._acqthread.start(QtCore.QThread.HighestPriority)
 
     def _connectComponents(self):

@@ -23,6 +23,7 @@
 #
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 import numpy as _np
+from traceback import print_exc as _print_exc
 from timedcapture import timestamp as _now
 from . import debug as _debug
 
@@ -64,15 +65,70 @@ class IntervalGeneration(QtCore.QThread):
         self.started.connect(self._timer.start)
         self.started.connect(self.raise_priority)
         self._timer.timeout.connect(acquisition.trigger_capture, QtCore.Qt.DirectConnection)
-        acquisition.acquisitionEnding.connect(self.quit)
         acquisition.acquisitionEnding.connect(self._timer.stop)
 
     def raise_priority(self):
         self.setPriority(QtCore.QThread.TimeCriticalPriority)
 
 class BusyWait(QtCore.QObject):
+    timeout = QtCore.pyqtSignal()
+
     def __init__(self, interval_ms, acquisition, parent=None):
         super().__init__(parent=parent)
+        self._thread   = QtCore.QThread()
+        self.moveToThread(self._thread)
+        self._interval = interval_ms / 1000
+        self._target   = _now()
+        self._continue = False
+        self.wait      = self._thread.wait
+        self.quit      = self._thread.quit
+        self._timing   = QtCore.QMutex()
+        self._waitAcq  = acquisition.waitForCapture
+
+        acquisition.acquisitionStarting.connect(self._thread.start)
+        acquisition.acquisitionEnding.connect(self.signal, QtCore.Qt.DirectConnection)
+        self._thread.started.connect(self.run, QtCore.Qt.DirectConnection)
+        self._thread.started.connect(self.raisePriority)
+        self.timeout.connect(acquisition.trigger_capture, QtCore.Qt.QueuedConnection)
+
+    def raisePriority(self):
+        self._thread.setPriority(QtCore.QThread.TimeCriticalPriority)
+
+    def run(self):
+        self._continue = True
+        try:
+            while True:
+                now    = _now()
+                while now < self._target:
+                    self._timing.lock()
+                    if self._continue == False:
+                        # _debug(f"ending timer")
+                        self._timing.unlock()
+                        break
+                    self._timing.unlock()
+                    now    = _now()
+
+                self._timing.lock()
+                if self._continue == False:
+                    # _debug(f"ending timer")
+                    self._timing.unlock()
+                    break
+                self.timeout.emit()
+                self._timing.unlock()
+                self._waitAcq()
+                self._target = now + self._interval
+        except:
+            _print_exc()
+        # _debug("timer ended")
+
+    def signal(self):
+        self._timing.lock()
+        try:
+            self._continue = False
+        except:
+            _print_exc()
+        finally:
+            self._timing.unlock()
 
 class Acquisition(QtCore.QThread):
     """the class that governs acquisition from the camera."""
@@ -89,7 +145,6 @@ class Acquisition(QtCore.QThread):
         self._captured    = QtCore.QWaitCondition() # used with _acquisition
         self._toquit      = False # used with _acquisition
         self._priority    = DEFAULT_PRIORITY if priority is None else priority
-        # self.started.connect(self.raise_priority)
 
         self._evaluator   = no_evaluator
 
@@ -111,7 +166,7 @@ class Acquisition(QtCore.QThread):
         """returns a context manager to lock the acqusition mutex."""
         return _AcquisitionInterrupt(self)
 
-    def wait_for_capture(self):
+    def waitForCapture(self):
         """waits until a single frame is grabbed."""
         self._acquisition.lock()
         self._captured.wait(self._acquisition)
