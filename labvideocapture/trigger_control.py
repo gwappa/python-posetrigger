@@ -26,13 +26,42 @@ from pathlib import Path
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from . import debug as _debug
 
+class TriggerOutput(QtCore.QObject):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self._triggered = False
+        self._acq       = None
+
+    @property
+    def enabled(self):
+        return self._triggered
+
+    @enabled.setter
+    def enabled(self, val: bool):
+        self._triggered = val
+        if self._acq is not None:
+            self._acq.setTriggerOutput(self.updateOutput if val == True else None)
+
+    def updateWithAcquisition(self, mode, acq):
+        if mode != "":
+            # starting
+            self._acq = acq
+            acq.setTriggerOutput(self.updateOutput if self._triggered == True else None)
+        else:
+            # ending
+            self._acq = None
+
+    def updateOutput(self, val: bool):
+        _debug(f"trigger --> {val}")
+
 class TriggerControl(QtWidgets.QGroupBox):
-    triggerEnabled = QtCore.pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__("Trigger generation", parent=parent)
-        self._triggered = False
-        self._enable = QtWidgets.QCheckBox("Enable trigger")
+        self._model  = TriggerOutput()
+        self.updateWithAcquisition = self._model.updateWithAcquisition
+
+        self._enable = QtWidgets.QCheckBox("Enable trigger output")
         self._header = QtWidgets.QLabel("Trigger UDP port: ")
         self._field  = PortEditor("6666")
         self._tester = QtWidgets.QPushButton("Toggle Manually")
@@ -49,20 +78,6 @@ class TriggerControl(QtWidgets.QGroupBox):
 
         self.setTriggerable(False)
 
-    @property
-    def enabled(self):
-        return self._triggered
-
-    @enabled.setter
-    def enabled(self, val: bool):
-        self._triggered = val
-        self.triggerEnabled.emit(val)
-        _debug(f"triggerable --> {val}")
-
-    def updateOutput(self, val: bool):
-        if self._triggered == True:
-            _debug(f"trigger --> {val}")
-
     def setTriggerable(self, val: bool):
         self._enable.setEnabled(val)
         self.updateInterface()
@@ -70,7 +85,7 @@ class TriggerControl(QtWidgets.QGroupBox):
     def updateInterface(self, notused=None):
         status = self._enable.isEnabled() and (self._enable.checkState() != QtCore.Qt.Unchecked)
         self._tester.setEnabled(not status)
-        self.enabled = status
+        self._model.enabled = status
 
 class PortEditor(QtWidgets.QLineEdit):
     def __init__(self, content, parent=None):

@@ -54,7 +54,7 @@ class Evaluation(QtCore.QObject):
         self._cfgpath    = None
         self._parts      = []
         self._session    = None
-        self._expression = None
+        self._expression = return_false
         self._origshape  = None
         self._buffer     = None
         self._resizedims = None
