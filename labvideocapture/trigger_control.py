@@ -25,49 +25,23 @@
 from pathlib import Path
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from . import debug as _debug
-
-class TriggerOutput(QtCore.QObject):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        self._triggered = False
-        self._acq       = None
-
-    @property
-    def enabled(self):
-        return self._triggered
-
-    @enabled.setter
-    def enabled(self, val: bool):
-        self._triggered = val
-        if self._acq is not None:
-            self._acq.setTriggerOutput(self.updateOutput if val == True else None)
-
-    def updateWithAcquisition(self, mode, acq):
-        if mode != "":
-            # starting
-            self._acq = acq
-            acq.setTriggerOutput(self.updateOutput if self._triggered == True else None)
-        else:
-            # ending
-            self._acq = None
-
-    def updateOutput(self, val: bool):
-        # TODO: connect to feconnect
-        _debug(f"trigger --> {val}")
+from . import trigger as _trigger
 
 class TriggerControl(QtWidgets.QGroupBox):
 
     def __init__(self, parent=None):
         super().__init__("Trigger generation", parent=parent)
-        self._model  = TriggerOutput()
+        self._model  = _trigger.TriggerOutput()
         self.updateWithAcquisition = self._model.updateWithAcquisition
+        self.teardown              = self._model.teardown
 
         self._enable = QtWidgets.QCheckBox("Enable trigger output")
         self._header = QtWidgets.QLabel("Trigger UDP port: ")
-        self._field  = PortEditor("6666")
+        self._field  = PortEditor("11666") # TODO: reflect to _model
         self._tester = QtWidgets.QPushButton("Toggle Manually")
         self._tester.setCheckable(True)
         self._tester.setChecked(False)
+        self._tester.clicked.connect(self.updateWithToggle)
         self._enable.stateChanged.connect(self.updateInterface)
 
         self._layout = QtGui.QGridLayout()
@@ -87,6 +61,9 @@ class TriggerControl(QtWidgets.QGroupBox):
         status = self._enable.isEnabled() and (self._enable.checkState() != QtCore.Qt.Unchecked)
         self._tester.setEnabled(not status)
         self._model.enabled = status
+
+    def updateWithToggle(self):
+        self._model.updateOutput(self._tester.isChecked())
 
 class PortEditor(QtWidgets.QLineEdit):
     def __init__(self, content, parent=None):
