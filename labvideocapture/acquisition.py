@@ -86,7 +86,7 @@ class BusyWait(QtCore.QObject):
         self.wait      = self._thread.wait
         self.quit      = self._thread.quit
         self._timing   = QtCore.QMutex()
-        self._waitAcq  = acquisition.waitForCapture
+        self._waitAcq  = acquisition.triggerAndWait
 
         acquisition.acquisitionStarting.connect(self._thread.start)
         acquisition.acquisitionEnding.connect(self.signal, QtCore.Qt.DirectConnection)
@@ -116,7 +116,6 @@ class BusyWait(QtCore.QObject):
                     # _debug(f"ending timer")
                     self._timing.unlock()
                     break
-                self.timeout.emit()
                 self._timing.unlock()
                 self._waitAcq()
                 self._target = now + self._interval
@@ -176,6 +175,13 @@ class Acquisition(QtCore.QThread):
     def waitForCapture(self):
         """waits until a single frame is grabbed."""
         self._acquisition.lock()
+        self._captured.wait(self._acquisition)
+        self._acquisition.unlock()
+
+    def triggerAndWait(self):
+        """a combination of triggerCapture() and waitForCapture() using a single mutex lock."""
+        self._acquisition.lock()
+        self._triggered.wakeAll()
         self._captured.wait(self._acquisition)
         self._acquisition.unlock()
 

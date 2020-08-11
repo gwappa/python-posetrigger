@@ -52,6 +52,7 @@ class TriggerOutput(QtCore.QObject):
             self._acq = None
 
     def updateOutput(self, val: bool):
+        # TODO: connect to feconnect
         _debug(f"trigger --> {val}")
 
 class TriggerControl(QtWidgets.QGroupBox):

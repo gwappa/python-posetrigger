@@ -30,6 +30,8 @@ LABEL_FOCUS      = "FOCUS"
 LABEL_ACQUIRE    = "ACQUIRE"
 DEFAULT_INTERVAL = 10
 
+TIMING           = _acquisition.BusyWait
+
 class AcquisitionControl(QtGui.QGroupBox):
     modeIsChanging = QtCore.pyqtSignal(str, object)
     statusUpdated  = QtCore.pyqtSignal(str)
@@ -101,7 +103,7 @@ class AcquisitionControl(QtGui.QGroupBox):
         self._mode   = mode
         self._acq    = _acquisition.Acquisition(self._device)
         self.modeIsChanging.emit(self._mode, self._acq)
-        self._timing = _acquisition.BusyWait(self._interval.value(), self._acq)
+        self._timing = TIMING(self._interval.value(), self._acq)
         self._acq.acquisitionStarting.connect(self.flag_acquisition_started)
         self._acq.acquisitionEnding.connect(self.revert_to_idle)
         self._acq.start()
