@@ -52,7 +52,9 @@ class FrameView(QtWidgets.QGraphicsView):
         self._width     = width
         self._height    = height
         self._scene     = QtWidgets.QGraphicsScene()
-        self._image     = _pg.ImageItem(_np.zeros((width,height), dtype=_np.uint16))
+        self._image     = _pg.ImageItem(_np.zeros((width,height), dtype=_np.uint16),
+                                        levels=(0, 65535), autolevels=False)
+        self._levels    = (0, 65535)
         self._bodyparts = None
 
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
@@ -61,6 +63,10 @@ class FrameView(QtWidgets.QGraphicsView):
         self._scene.addItem(self._image)
         self.setScene(self._scene)
 
+    def setMaximumLevel(self, M):
+        self._levels = (0, M)
+        self._image.setLevels(self._levels)
+
     def updateWithAcquisition(self, mode, acq):
         if mode == "":
             acq.frameAcquired.disconnect(self.updateWithFrame)
@@ -68,7 +74,7 @@ class FrameView(QtWidgets.QGraphicsView):
             acq.frameAcquired.connect(self.updateWithFrame)
 
     def updateWithFrame(self, img, estimation, timestamp):
-        self._image.setImage(image_to_display(img))
+        self._image.setImage(image_to_display(img), levels=self._levels, autolevels=False)
         if (self._bodyparts is not None) and ("pose" in estimation.keys()):
             pose = estimation["pose"]
             for i, part in enumerate(self._bodyparts):

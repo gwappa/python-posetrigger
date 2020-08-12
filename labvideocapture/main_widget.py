@@ -78,6 +78,9 @@ class MainWidget(QtGui.QWidget):
         self._control.modeIsChanging.connect(self._trigger.updateWithAcquisition)
         self._storage.statusUpdated.connect(self._control.show_storage_status)
 
+        self._frame.setMaximumLevel(self._preview.value)
+        self._preview.valueChanged.connect(self._frame.setMaximumLevel)
+
         self._connectEvaluationToModel()
         self._connectEvaluationToFrame()
         self._connectEvaluationToTrigger()
