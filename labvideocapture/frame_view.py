@@ -23,9 +23,13 @@
 #
 
 import numpy as _np
+import matplotlib.pyplot as _plt
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 import pyqtgraph as _pg
 from . import debug as _debug
+
+JET      = _plt.get_cmap("jet")
+SPOTSIZE = 20
 
 def image_to_display(img):
     if img.ndim == 3:
@@ -43,7 +47,7 @@ class FrameView(QtWidgets.QGraphicsView):
         self._height    = height
         self._scene     = QtWidgets.QGraphicsScene()
         self._image     = _pg.ImageItem(_np.zeros((width,height), dtype=_np.uint16))
-        self._bodyparts = []
+        self._bodyparts = None
 
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -61,9 +65,35 @@ class FrameView(QtWidgets.QGraphicsView):
         self._image.setImage(image_to_display(img))
 
     def registerBodyParts(self, parts):
-        # TODO: as annotation object
-        self._bodyparts = parts
+        # removing old annotations
+        if self._bodyparts is not None:
+            for anno in self._bodyparts:
+                self._scene.removeItem(anno.spot)
+            self._bodyparts = None
+        
+        # adding new annotations
+        total = len(parts)
+        if total == 0:
+            return
+        self._bodyparts = []
+        for i, part in enumerate(parts):
+            d    = (i+1)*40 # just for the temporary debug purpose
+            anno = Annotation(part, initial=((d,),(d,)))
+            self._scene.addItem(anno.spot)
+            self._bodyparts.append(anno)
 
     def annotatePositions(self, pose, timestamp):
-        # TODO
-        pass
+        if self._bodyparts is not None:
+            for i, part in enumerate(self._bodyparts):
+                part.setPosition(pose[i,:2])
+
+class Annotation:
+    def __init__(self, name, initial=((0,),(0,)),
+                 color="y", spotsize=SPOTSIZE):
+        self.name   = name
+        self.spot   = _pg.ScatterPlotItem(pos=initial, size=spotsize, pen=_pg.mkPen(color))
+    
+    def setPosition(self, xy):
+        self.spot.setData(pos=xy.reshape((2,1)))
+        
+        
