@@ -89,14 +89,15 @@ class FrameView(QtWidgets.QGraphicsView):
         self._bodyparts = []
         cmap = colormap(total)
         for i, part in enumerate(parts):
-            anno = Annotation(part, color=cmap(i))
+            anno = Annotation(part, dims=(self._width, self._height), color=cmap(i))
             self._scene.addItem(anno.spot)
             self._bodyparts.append(anno)
 
 class Annotation:
-    def __init__(self, name, initial=(0, 0),
+    def __init__(self, name, dims, initial=(0, 0),
                  color="y", spotsize=SPOTSIZE):
         self.name   = name
+        self._dims  = _np.array(dims)
         self._dia   = spotsize / 2
         self.spot   = QtWidgets.QGraphicsEllipseItem(initial[0]-self._dia,
                                                      initial[1]-self._dia,
@@ -108,4 +109,4 @@ class Annotation:
 
     def setPosition(self, xy):
         self.spot.setPos(xy[0]-self._dia, xy[1]-self._dia)
-        self.spot.setVisible(True)
+        self.spot.setVisible( all(xy>=0) and all(xy<=self._dims) )
