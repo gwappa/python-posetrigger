@@ -82,7 +82,6 @@ class MainWidget(QtGui.QWidget):
 
     def _connectEvaluationToFrame(self):
         self._evalmodel.bodypartsUpdated.connect(self._frame.registerBodyParts)
-        self._evalmodel.estimationUpdated.connect(self._frame.annotatePositions)
 
     def _connectEvaluationToModel(self):
         self._evaluation.DLCProjectChanged.connect(self._evalmodel.updateWithProject)

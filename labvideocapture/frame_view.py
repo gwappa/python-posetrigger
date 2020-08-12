@@ -23,9 +23,19 @@
 #
 
 import numpy as _np
+import matplotlib.pyplot as _plt
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 import pyqtgraph as _pg
 from . import debug as _debug
+
+COLORMAP = _plt.get_cmap("rainbow")
+SPOTSIZE = 20
+
+def colormap(total):
+    def color_for_index(i):
+        r, g, b, a = COLORMAP((i+1)/(total+1))
+        return (int(r*255), int(g*255), int(b*255))
+    return color_for_index
 
 def image_to_display(img):
     if img.ndim == 3:
@@ -43,7 +53,7 @@ class FrameView(QtWidgets.QGraphicsView):
         self._height    = height
         self._scene     = QtWidgets.QGraphicsScene()
         self._image     = _pg.ImageItem(_np.zeros((width,height), dtype=_np.uint16))
-        self._bodyparts = []
+        self._bodyparts = None
 
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -57,13 +67,45 @@ class FrameView(QtWidgets.QGraphicsView):
         else:
             acq.frameAcquired.connect(self.updateWithFrame)
 
-    def updateWithFrame(self, img, timestamp):
+    def updateWithFrame(self, img, estimation, timestamp):
         self._image.setImage(image_to_display(img))
+        if (self._bodyparts is not None) and ("pose" in estimation.keys()):
+            pose = estimation["pose"]
+            for i, part in enumerate(self._bodyparts):
+                part.setPosition(pose[i,:2])
+            self._scene.changed.emit([QtCore.QRectF(0, 0, self._width, self._height)])
 
     def registerBodyParts(self, parts):
-        # TODO: as annotation object
-        self._bodyparts = parts
+        # removing old annotations
+        if self._bodyparts is not None:
+            for anno in self._bodyparts:
+                self._scene.removeItem(anno.spot)
+            self._bodyparts = None
 
-    def annotatePositions(self, pose, timestamp):
-        # TODO
-        pass
+        # adding new annotations
+        total = len(parts)
+        if total == 0:
+            return
+        self._bodyparts = []
+        cmap = colormap(total)
+        for i, part in enumerate(parts):
+            anno = Annotation(part, color=cmap(i))
+            self._scene.addItem(anno.spot)
+            self._bodyparts.append(anno)
+
+class Annotation:
+    def __init__(self, name, initial=(0, 0),
+                 color="y", spotsize=SPOTSIZE):
+        self.name   = name
+        self._dia   = spotsize / 2
+        self.spot   = QtWidgets.QGraphicsEllipseItem(initial[0]-self._dia,
+                                                     initial[1]-self._dia,
+                                                     self._dia,
+                                                     self._dia)
+        self._color = _pg.mkColor(color)
+        self.spot.setPen(QtGui.QPen(self._color))
+        self.spot.setVisible(False)
+
+    def setPosition(self, xy):
+        self.spot.setPos(xy[0]-self._dia, xy[1]-self._dia)
+        self.spot.setVisible(True)
