@@ -38,7 +38,7 @@ setuptools.setup(
     author='Keisuke Sehara',
     author_email='keisuke.sehara@gmail.com',
     license='MIT',
-    install_requires=['pyqtgraph', 'timedcapture'],
+    install_requires=['numpy', 'matplotlib', 'opencv-python', 'pyqtgraph', 'timedcapture'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
