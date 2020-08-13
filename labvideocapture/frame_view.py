@@ -63,8 +63,8 @@ class FrameView(QtWidgets.QGraphicsView):
         self._scene.addItem(self._image)
         self.setScene(self._scene)
 
-    def setMaximumLevel(self, M):
-        self._levels = (0, M)
+    def setRange(self, m, M):
+        self._levels = (m, M)
         self._image.setLevels(self._levels)
 
     def updateWithAcquisition(self, mode, acq):

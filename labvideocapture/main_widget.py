@@ -79,8 +79,11 @@ class MainWidget(QtGui.QWidget):
         self._control.modeIsChanging.connect(self._trigger.updateWithAcquisition)
         self._storage.statusUpdated.connect(self._control.show_storage_status)
 
-        self._frame.setMaximumLevel(self._processing.value)
-        self._processing.valueChanged.connect(self._frame.setMaximumLevel)
+        vmin, vmax = self._processing.range
+        self._frame.setRange(vmin, vmax)
+        self._evalmodel.setLightnessRange(vmin, vmax)
+        self._processing.rangeChanged.connect(self._frame.setRange)
+        self._processing.rangeChanged.connect(self._evalmodel.setLightnessRange)
 
         self._connectEvaluationToModel()
         self._connectEvaluationToFrame()
