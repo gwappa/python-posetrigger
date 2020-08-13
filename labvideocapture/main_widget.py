@@ -29,6 +29,7 @@ from . import storage_control as _sctrl
 from . import evaluation_control as _ectrl
 from . import trigger_control as _tctrl
 from . import frame_view as _fview
+from . import preprocessing_control as _pctrl
 
 from . import debug as _debug
 
@@ -44,12 +45,12 @@ class MainWidget(QtGui.QWidget):
         self._evaluation = _ectrl.EvaluationControl()
         self._trigger    = _tctrl.TriggerControl()
         self._frame      = _fview.FrameView(self._camera.width, self._camera.height)
-        self._preview    = _fview.PreviewControl()
+        self._processing = _pctrl.PreprocessingControl()
         self._connectComponents()
         self._layout  = QtGui.QGridLayout()
         self._layout.addWidget(self._frame,      0, 0, 6, 1)
         self._layout.addWidget(self._camera,     0, 1, 1, 2)
-        self._layout.addWidget(self._preview,    1, 1, 1, 2)
+        self._layout.addWidget(self._processing, 1, 1, 1, 2)
         self._layout.addWidget(self._control,    2, 1, 1, 2)
         self._layout.addWidget(self._evaluation, 3, 1, 1, 2)
         self._layout.addWidget(self._trigger,    4, 1, 1, 2)
@@ -78,8 +79,8 @@ class MainWidget(QtGui.QWidget):
         self._control.modeIsChanging.connect(self._trigger.updateWithAcquisition)
         self._storage.statusUpdated.connect(self._control.show_storage_status)
 
-        self._frame.setMaximumLevel(self._preview.value)
-        self._preview.valueChanged.connect(self._frame.setMaximumLevel)
+        self._frame.setMaximumLevel(self._processing.value)
+        self._processing.valueChanged.connect(self._frame.setMaximumLevel)
 
         self._connectEvaluationToModel()
         self._connectEvaluationToFrame()
