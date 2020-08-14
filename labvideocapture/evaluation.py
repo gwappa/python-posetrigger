@@ -61,7 +61,7 @@ class Evaluation(QtCore.QObject):
         self._scale      = 1
         self._vmin       = 0
         self._vmax       = 65535
-        self._amp        = (self._vmax - self._vmin) * 256
+        self._amp        = (self._vmax - self._vmin) // 255
 
     def updateWithProject(self, path: str):
         if path == "":
@@ -133,7 +133,7 @@ class Evaluation(QtCore.QObject):
     def setLightnessRange(self, m, M):
         self._vmin = m
         self._vmax = M
-        self._amp  = (M - m)*256
+        self._amp  = (M - m) // 255
 
     def estimateFromFrame(self, frame):
         if self._session is not None:
