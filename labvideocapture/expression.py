@@ -32,6 +32,19 @@ class ParseError(RuntimeError):
 def bool_like(x):
     return isinstance(x, (bool, _np.bool_))
 
+class Alternator:
+    def __init__(self, n):
+        self.i      = 0
+        self.n      = n
+        self.status = False
+
+    def get(self):
+        self.i += 1
+        if self.i % self.n == 0:
+            self.i      = 0
+            self.status = not self.status
+        return self.status
+
 class BodyPart:
     def __init__(self, index):
         self._index = index
@@ -72,10 +85,17 @@ def parse(line_expr, bodyparts):
     run       -- a function that takes a (N, 3) array and returns a boolean value.
     """
     mapping = dict((part, BodyPart(i)) for i, part in enumerate(bodyparts))
-    expr    = compile(line_expr.format(**mapping),
-                      "<expression>", mode="eval")
+    try:
+        expr    = compile(line_expr.format(**mapping),
+                          "<expression>", mode="eval")
+    except KeyError as e:
+        raise ParseError(f"{e}")
+
+    every10 = Alternator(10)
     def _run(estimation):
-        return eval(expr, dict(math=_math, np=_np, __pred__=estimation), {})
+        return eval(expr, dict(math=_math, np=_np,
+                               __pred__=estimation,
+                               EVERY10=every10), {})
     try:
         ret = _run(_np.empty((len(bodyparts), 3), dtype=_np.float64)*_np.nan)
     except BaseException as e:
