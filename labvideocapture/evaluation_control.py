@@ -158,7 +158,7 @@ class EvaluationEditor(QtCore.QObject):
 
         self._enable.stateChanged.connect(self.updateUI)
         self._field.returnPressed.connect(self.updateWithExpression)
-        self.setEnabled(False)
+        # self.setEnabled(False)
 
     @property
     def partdisplay(self):

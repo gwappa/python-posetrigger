@@ -72,16 +72,15 @@ class Storage(QtCore.QObject):
         elif mode == _actrl.LABEL_ACQUIRE:
             self._path = _datetime.datetime.now().strftime(self._format) + self._suffix
             _debug(f"opening storage: {self._path}")
-            self._frametime   = []
-            if self._bodyparts is not None:
-                self._posetime = []
-                self._pose     = []
-                self._status   = []
-            self._out     = []
-            self._nframes = 0
+            self._frametime = []
+            self._posetime  = []
+            self._pose      = []
+            self._status    = []
+            self._out       = []
+            self._nframes   = 0
             acquisition.frameAcquired.connect(self.addFrame, QtCore.Qt.QueuedConnection)
         else:
-            self.close()
+            self.close(acquisition.getStaticMetadata())
 
     def updateWithBodyParts(self, parts):
         if len(parts) > 0:
@@ -92,25 +91,31 @@ class Storage(QtCore.QObject):
     def addFrame(self, frame, estimation, timestamp):
         self._frametime.append(timestamp)
         self._out.append(_np.array(frame, copy=True))
-        if self._pose is not None:
-            self._pose.append(estimation["pose"])
-            self._posetime.append(estimation["process_end"])
-            status = estimation["status"]
-            self._status.append(status if status is not None else False)
+        self._pose.append(estimation["pose"])
+        self._posetime.append(estimation["process_end"])
+        status = estimation["status"]
+        self._status.append(status if status is not None else False)
         self._nframes += 1
         if self._nframes % 100 == 0:
             self.statusUpdated.emit(f"collected >{self._nframes} frames...")
 
-    def close(self):
+    def close(self, metadata={}):
         if self._out is not None:
             _debug(f"closing storage: {self._path} ({len(self._frametime)} frames)")
             values = dict(frames=_np.stack(self._out, axis=0),
                           timestamps=_np.array(self._frametime))
-            if self._pose is not None:
+            if self._bodyparts is not None:
                 values["bodyparts"]      = self._bodyparts
-                values["estimation"]     = _np.stack(self._pose, axis=0)
-                values["process_end"]    = _np.array(self._posetime)
-                values["trigger_status"] = _np.array(self._status)
+
+            if self._pose[0] is None:
+                values["estimation"] = _np.empty(len(self._pose)) * _np.nan
+            else:
+                values["estimation"] = _np.stack(self._pose, axis=0)
+                
+            values["process_end"]    = _np.array(self._posetime)
+            values["trigger_status"] = _np.array(self._status)
+            if len(metadata) > 0:
+                values["metadata"]       = metadata
             with open(self._path, "wb") as out:
                 _np.savez(out, **values)
             self._out       = None

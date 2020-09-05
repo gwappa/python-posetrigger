@@ -73,6 +73,7 @@ class MainWidget(QtGui.QWidget):
         self.resize(1200,720)
 
     def _connectComponents(self):
+        self._control.modeIsChanging.connect(self._camera.updateWithAcquisition)
         self._control.modeIsChanging.connect(self._frame.updateWithAcquisition)
         self._control.modeIsChanging.connect(self._storage.updateWithAcquisition)
         self._control.modeIsChanging.connect(self._evalmodel.updateWithAcquisition)

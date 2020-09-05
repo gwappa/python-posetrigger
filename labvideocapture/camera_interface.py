@@ -53,6 +53,11 @@ class CameraInterface(QtGui.QGroupBox):
         self._layout.addRow("gain", self._gain)
         self.setLayout(self._layout)
 
+    def updateWithAcquisition(self, mode, acq):
+        if mode == "ACQUIRE":
+            for attr in ("width", "height", "exposure_us", "gain"):
+                acq.setStaticMetadata(attr, getattr(self._device, attr))
+
     @property
     def path(self):
         return self._device.path

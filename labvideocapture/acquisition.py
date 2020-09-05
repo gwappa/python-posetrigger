@@ -150,6 +150,7 @@ class Acquisition(QtCore.QThread):
 
         self._evaluator   = no_evaluator
         self._output      = no_output
+        self._metadata    = {}
 
     @property
     def width(self):
@@ -196,6 +197,15 @@ class Acquisition(QtCore.QThread):
         self._triggered.wakeAll() # just in case it is needed
         self._acquisition.unlock()
 
+    def getStaticMetadata(self, key=None):
+        if key is None:
+            return dict(**self._metadata)
+        else:
+            return self._metadata.get(key, None)
+
+    def setStaticMetadata(self, key, value):
+        self._metadata[str(key)] = value
+
     def run(self):
         self._acquisition.lock()
         self._toquit = False
@@ -213,12 +223,10 @@ class Acquisition(QtCore.QThread):
                 start = _now()
                 frame = self._device.read_frame()
                 pose, status = self._evaluator(frame)
-                if pose is not None:
-                    if status is not None:
-                        self._output(status)
-                    estimation = dict(pose=pose, status=status, process_end=_now())
-                else:
-                    estimation = {}
+                if status is not None:
+                    self._output(status)
+
+                estimation = dict(pose=pose, status=status, process_end=_now())
                 self.frameAcquired.emit(frame, estimation, start)
                 self._acquisition.lock()
                 self._captured.wakeAll()

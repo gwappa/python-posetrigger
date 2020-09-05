@@ -86,6 +86,7 @@ class Evaluation(QtCore.QObject):
         # try to load session
         self._session = _dlclib.estimate.TFSession.from_config(self._cfgpath,
                                                                locate_on_gpu=LOCATE_ON_GPU)
+        _debug(f"set DLC session: {self._cfgpath.parent.name}")
 
     def setEvaluationEnabled(self, val: bool):
         _debug(f"evaluation --> {val}")
@@ -102,8 +103,8 @@ class Evaluation(QtCore.QObject):
     def updateWithAcquisition(self, mode, acq):
         if mode != "":
             # starting acquisition
+            acq.setEvaluator(self.estimateFromFrame)
             if self._session is not None:
-                acq.setEvaluator(self.estimateFromFrame)
                 self._prepareBuffer(acq.width, acq.height)
             self.evaluationModeLocked.emit(True)
         else:
@@ -144,5 +145,7 @@ class Evaluation(QtCore.QObject):
             pose[:,:2] = pose[:,:2] * self._scale
             status = self._expression(pose) if self._evaluated == True else None
             return pose, status
+        elif self._evaluated == True:
+            return None, self._expression(None)
         else:
             return None, None
