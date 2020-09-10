@@ -221,7 +221,7 @@ class Acquisition(QtCore.QThread):
                     return
                 self._acquisition.unlock()
                 start = _now()
-                frame = self._device.read_frame()
+                frame = self._device.read_frame(software_trigger=True)
                 pose, status = self._evaluator(frame)
                 if status is not None:
                     self._output(status)

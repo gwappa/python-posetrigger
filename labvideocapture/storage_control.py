@@ -24,6 +24,7 @@
 
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from time import time as _now
+import json as _json
 import datetime as _datetime
 import numpy as _np
 import bzar as _bzar
@@ -111,11 +112,11 @@ class Storage(QtCore.QObject):
                 values["estimation"] = _np.empty(len(self._pose)) * _np.nan
             else:
                 values["estimation"] = _np.stack(self._pose, axis=0)
-                
+
             values["process_end"]    = _np.array(self._posetime)
             values["trigger_status"] = _np.array(self._status)
             if len(metadata) > 0:
-                values["metadata"]       = metadata
+                values["metadata"]       = _json.dumps(metadata)
             with open(self._path, "wb") as out:
                 _np.savez(out, **values)
             self._out       = None
