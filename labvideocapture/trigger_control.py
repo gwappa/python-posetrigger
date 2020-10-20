@@ -27,13 +27,26 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from . import debug as _debug
 from . import trigger as _trigger
 
+def _do_nothing(*args, **kwargs):
+    pass
+
 class TriggerControl(QtWidgets.QGroupBox):
 
     def __init__(self, parent=None):
         super().__init__("Trigger generation", parent=parent)
-        self._model  = _trigger.TriggerOutput()
-        self.updateWithAcquisition = self._model.updateWithAcquisition
-        self.teardown              = self._model.teardown
+        try:
+            self._model  = _trigger.TriggerOutput()
+            self.updateWithAcquisition = self._model.updateWithAcquisition
+            self.teardown              = self._model.teardown
+        except ConnectionError:
+            QtWidgets.QMessageBox.warning(self, "Failed to connect to FastEventServer",
+                """LabVideoCapture failed to establish a connection to FastEventServer.
+The trigger-generation functionality will be disabled.
+
+To enable it, launch FastEventServer first, and re-launch LabVideoCapture.""")
+            self._model  = None
+            self.updateWithAcquisition = _do_nothing
+            self.teardown              = _do_nothing
 
         self._enable = QtWidgets.QCheckBox("Enable trigger output")
         self._header = QtWidgets.QLabel("Trigger UDP port: ")
@@ -52,18 +65,28 @@ class TriggerControl(QtWidgets.QGroupBox):
         self.setLayout(self._layout)
 
         self.setTriggerable(False)
+        if self._model is None:
+            self._disableAllControls()
+
+    def _disableAllControls(self):
+        for elem in (self._enable, self._header, self._field, self._tester):
+            elem.setEnabled(False)
+        self.setTitle("Trigger generation (disabled)")
 
     def setTriggerable(self, val: bool):
-        self._enable.setEnabled(val)
-        self.updateInterface()
+        if self._model is not None:
+            self._enable.setEnabled(val)
+            self.updateInterface()
 
     def updateInterface(self, notused=None):
-        status = self._enable.isEnabled() and (self._enable.checkState() != QtCore.Qt.Unchecked)
-        self._tester.setEnabled(not status)
-        self._model.enabled = status
+        if self._model is not None:
+            status = self._enable.isEnabled() and (self._enable.checkState() != QtCore.Qt.Unchecked)
+            self._tester.setEnabled(not status)
+            self._model.enabled = status
 
     def updateWithToggle(self):
-        self._model.updateOutput(self._tester.isChecked())
+        if self._model is not None:
+            self._model.updateOutput(self._tester.isChecked())
 
 class PortEditor(QtWidgets.QLineEdit):
     def __init__(self, content, parent=None):
