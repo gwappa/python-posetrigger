@@ -39,7 +39,7 @@ setuptools.setup(
     author_email='keisuke.sehara@gmail.com',
     license='MIT',
     install_requires=['numpy', 'matplotlib', 'opencv-python', 'pyqtgraph',
-                      'timedcapture>=0.3', 'dlclib>=1.0.2'],
+                      'timedcapture>=0.2', 'dlclib>=1.0.2'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
