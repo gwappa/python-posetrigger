@@ -22,12 +22,6 @@
 # SOFTWARE.
 #
 
-import argparse as _ap
-
-parser = ap.ArgumentParser(description="real-time capture and closed-loop triggering program.")
-parser.add_argument("camera-path", default="/dev/video0",
-    help="the path to the V4L2-compliant (preferrably ImagingSource) capture device.")
-
 if __name__ == "__main__":
-    from . import run_main
-    run_main(**vars(parser.parse_args()))
+    from . import main
+    main()

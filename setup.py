@@ -47,6 +47,6 @@ setuptools.setup(
         ],
     packages=setuptools.find_packages(),
     entry_points={
-        "console_scripts": [ "lvcapture=labvideocapture:run_main" ]
+        "console_scripts": [ "lvcapture=labvideocapture:main" ]
     }
 )

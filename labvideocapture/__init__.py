@@ -21,6 +21,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+import argparse as _ap
+from pathlib import Path as _Path
+
+parser = _ap.ArgumentParser(description="real-time capture and closed-loop triggering program.")
+parser.add_argument("device", default="/dev/video0",
+    help="the path to the V4L2-compliant (preferrably ImagingSource) capture device.")
 
 VERSION_STR = "1.0.0"
 
@@ -31,12 +37,17 @@ def debug(msg, end="\n"):
     if DEBUG == True:
         print(msg, end=end, file=sys.stderr, flush=True)
 
-def run_main(camera_path="/dev/video0"):
+def main():
+    run(**vars(parser.parse_args()))
+
+def run(device="/dev/video0"):
+    if not _Path(device).exists():
+        print(f"***device does not exist: {device}")
+        return
+    from .main_widget import MainWidget
     from pyqtgraph.Qt import QtGui
     app    = QtGui.QApplication([])
-    window = MainWidget(path=camera_path)
+    window = MainWidget(path=device)
     app.aboutToQuit.connect(window.teardown)
     window.show()
     QtGui.QApplication.instance().exec_()
-
-from .main_widget import MainWidget
