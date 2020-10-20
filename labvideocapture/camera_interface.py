@@ -35,7 +35,6 @@ class CameraInterface(QtGui.QGroupBox):
     def __init__(self, device, parent=None):
         super().__init__(f"Camera '{device.path}'", parent=parent)
         self._device   = device
-        self._device.triggered = True
 
         self._exposure = QtGui.QSpinBox()
         self._exposure.setMinimum(1)

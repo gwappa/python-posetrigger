@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-VERSION_STR = "0.6.2"
+VERSION_STR = "1.0.0"
 
 DEBUG = True
 

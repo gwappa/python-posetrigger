@@ -142,6 +142,12 @@ class Acquisition(QtCore.QThread):
         """device: timedcapture.Device"""
         super().__init__(parent=parent)
         self._device      = device
+        self._has_trigger = False
+        try:
+            self._device.triggered = True
+            self._has_trigger = True
+        except RuntimeError:
+            _debug("failed to run in the triggered mode; use free-running mode")
         self._acquisition = QtCore.QMutex()
         self._triggered   = QtCore.QWaitCondition() # used with _acquisition
         self._captured    = QtCore.QWaitCondition() # used with _acquisition
@@ -210,7 +216,6 @@ class Acquisition(QtCore.QThread):
         self._acquisition.lock()
         self._toquit = False
         self._device.start_capture()
-        self._device.read_frame()
         self.acquisitionStarting.emit()
         try:
             while True:
@@ -221,7 +226,8 @@ class Acquisition(QtCore.QThread):
                     return
                 self._acquisition.unlock()
                 start = _now()
-                frame = self._device.read_frame(software_trigger=True)
+                frame = self._device.read_frame(software_trigger=self._has_trigger,
+                                                read_unbuffered=not self._has_trigger)
                 pose, status = self._evaluator(frame)
                 if status is not None:
                     self._output(status)
