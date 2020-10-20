@@ -57,6 +57,18 @@ class EvaluationControl(QtWidgets.QGroupBox):
         self._layout.addWidget(self._expr.editor, 4, 1, 1, 3)
         self.setLayout(self._layout)
 
+    def disableAllControls(self):
+        for elem in (self._loader.header,
+                     self._loader.field,
+                     self._loader.loadbutton,
+                     self._loader.clearbutton,
+                     self._expr.partdisplay,
+                     self._expr.enablebutton,
+                     self._expr.header,
+                     self._expr.editor):
+            elem.setEnabled(False)
+        self.setTitle("DeepLabCut Evaluation (disabled)")
+
     def lockControl(self, val: bool):
         self._loader.setEnabled(not val)
         self._expr.enablebutton.setEnabled(not val)

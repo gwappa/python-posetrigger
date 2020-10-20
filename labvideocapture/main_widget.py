@@ -46,6 +46,15 @@ class MainWidget(QtGui.QWidget):
         self._trigger    = _tctrl.TriggerControl()
         self._frame      = _fview.FrameView(self._camera.width, self._camera.height)
         self._processing = _pctrl.PreprocessingControl()
+
+        if not self._evalmodel.HAS_DLC:
+            QtWidgets.QMessageBox.warning(self, "Failed to load DeepLabCut",
+                """LabVideoCapture failed to import "dlclib".
+The evaluation functionality will be disabled.
+
+To enable it, install DeepLabCut (version >=1.11) and DLCLib (version >=1.0.2), and launch LabVideoCapture again.""")
+            self._evaluation.disableAllControls()
+
         self._connectComponents()
         self._layout  = QtGui.QGridLayout()
         self._layout.addWidget(self._frame,      0, 0, 6, 1)

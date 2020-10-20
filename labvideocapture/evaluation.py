@@ -27,7 +27,12 @@ import numpy as _np
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from cv2 import resize as _resize, \
                 INTER_NEAREST as _INTER_NEAREST
-import dlclib as _dlclib # TODO: make it optional
+try:
+    import dlclib as _dlclib
+    HAS_DLC = True
+except ImportError:
+    HAS_DLC = False
+    
 from . import debug as _debug
 from .expression import parse as _parse_expression, \
                         ParseError as _ParseError
@@ -62,31 +67,33 @@ class Evaluation(QtCore.QObject):
         self._vmin       = 0
         self._vmax       = 65535
         self._amp        = (self._vmax - self._vmin) // 255
+        self.HAS_DLC     = HAS_DLC
 
     def updateWithProject(self, path: str):
-        if path == "":
-            self._parts = []
-            self.bodypartsUpdated.emit(tuple())
-            self._session = None
-            return
+        if self.HAS_DLC == True:
+            if path == "":
+                self._parts = []
+                self.bodypartsUpdated.emit(tuple())
+                self._session = None
+                return
 
-        # has value in path
-        _debug(f"load DLC project: {path}")
-        self._cfgpath = Path(path) / "config.yaml"
+            # has value in path
+            _debug(f"load DLC project: {path}")
+            self._cfgpath = Path(path) / "config.yaml"
 
-        # try to load body parts
-        try:
-            cfgdata     = _dlclib.load_config(self._cfgpath)
-            self._parts = tuple(cfgdata["bodyparts"])
-            self.bodypartsUpdated.emit(self._parts)
-        except Exception as e:
-            self.errorOccurred.emit("failed to open the DLC project", f"{e}")
-            return
+            # try to load body parts
+            try:
+                cfgdata     = _dlclib.load_config(self._cfgpath)
+                self._parts = tuple(cfgdata["bodyparts"])
+                self.bodypartsUpdated.emit(self._parts)
+            except Exception as e:
+                self.errorOccurred.emit("failed to open the DLC project", f"{e}")
+                return
 
-        # try to load session
-        self._session = _dlclib.estimate.TFSession.from_config(self._cfgpath,
-                                                               locate_on_gpu=LOCATE_ON_GPU)
-        _debug(f"set DLC session: {self._cfgpath.parent.name}")
+            # try to load session
+            self._session = _dlclib.estimate.TFSession.from_config(self._cfgpath,
+                                                                   locate_on_gpu=LOCATE_ON_GPU)
+            _debug(f"set DLC session: {self._cfgpath.parent.name}")
 
     def setEvaluationEnabled(self, val: bool):
         _debug(f"evaluation --> {val}")
@@ -101,17 +108,18 @@ class Evaluation(QtCore.QObject):
             self._expression = expr
 
     def updateWithAcquisition(self, mode, acq):
-        if mode != "":
-            # starting acquisition
-            acq.setEvaluator(self.estimateFromFrame)
-            if self._session is not None:
-                self._prepareBuffer(acq.width, acq.height)
-            self.evaluationModeLocked.emit(True)
-        else:
-            # stopping acquisition
-            if self._session is not None:
-                self._clearBuffer()
-            self.evaluationModeLocked.emit(False)
+        if self.HAS_DLC:
+            if mode != "":
+                # starting acquisition
+                acq.setEvaluator(self.estimateFromFrame)
+                if self._session is not None:
+                    self._prepareBuffer(acq.width, acq.height)
+                self.evaluationModeLocked.emit(True)
+            else:
+                # stopping acquisition
+                if self._session is not None:
+                    self._clearBuffer()
+                self.evaluationModeLocked.emit(False)
 
     def _prepareBuffer(self, width, height):
         self._origshape = (height, width, 1)
