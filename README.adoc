@@ -1,5 +1,6 @@
 = Pose-Trigger
 :toc:
+:toclevels: 3
 
 Pose-Trigger is a python application for real-time, closed-loop application
 of TTL trigger generation based on the pose of the subject.
@@ -61,6 +62,10 @@ Finally, the fast-trigger feature requires the followings:
 - Other USB-based boards that uses the ATmega16U2 chip _may_ work (although not recommended or supported).
 
 =========
+
+==== Reference setup specifications
+
+(TODO)
 
 === Install procedures
 
@@ -155,7 +160,7 @@ image::resources/Panels_acquisition.png[Acquisition timing control]
 Here you can set the (targeted) acquisition intervals. For example, if you want to have Pose-Trigger running at 50 Hz, set this interval to 20 ms.
 
 [NOTE]
-For the time being, you can only choose to use the busy-wait timing generation.
+For the time being, you can only choose to use the busy-wait timing-generation mechanism.
 
 ==== "DeepLabCut evaluation" panel
 
@@ -198,11 +203,11 @@ image::resources/Panels_triggering.png[Trigger mode control]
 
 Here, you can test and control trigger generation.
 
-#### Transferring evaluation results to FastEventServer
+===== Transferring evaluation results to FastEventServer
 
 By ticking "Enable trigger output", it starts sending the result of evaluation (true/false value) to FastEventServer.
 
-#### Manually toggling the trigger
+===== Manually toggling the trigger
 
 When trigger-output based on evaluation results is disabled, you can manually toggle the trigger output on and off, using the "Toggle manually" button.
 
@@ -218,7 +223,7 @@ Here, you can control how acquired data are stored.
 *File names are automatically generated* using the text entered in the "File-name format" field. You can use the following *format directives*. These fields are passed on straight to the `datetime.strftime` method (refer to https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior[the python datetime module documentation] on the specific format directives).
 
 [IMPORTANT]
-Be cautious that Pose-Trigger *automatically overwrites* the file! Try to include (at least) the minutes/seconds directive into the file-name format, so that you do not unexpectedly delete your previous videos. 
+Be cautious of Pose-Trigger *automatically overwriting existing files*! Try to include (at least) the minutes/seconds directive into the file-name format, so that you do not unexpectedly delete your previous videos.
 
 == How Pose-Trigger works: concepts
 
