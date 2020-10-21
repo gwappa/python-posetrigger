@@ -1,0 +1,4 @@
+= Pose-Trigger
+
+Pose-Trigger is a python application for real-time, closed-loop application
+of TTL trigger generation based on the pose of the subject.
