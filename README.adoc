@@ -1,4 +1,86 @@
 = Pose-Trigger
+:toc:
 
 Pose-Trigger is a python application for real-time, closed-loop application
 of TTL trigger generation based on the pose of the subject.
+
+image::resources/Screenshot.png[A screenshot of a working Pose-Trigger app (in a development version)]
+
+== Introduction
+
+=== What can Pose-Trigger do?
+
+Pose-Trigger is designed to work on a linux computer equipped with a high-speed video camera.
+The current version of the software features:
+
+. Acquisition of *high-speed videos* (up to 100-200 fps without on-line pose estimation).
+.. On-line exposure/gain adjustment.
+.. Adjustment of acquisition intervals.
+. *On-line estimation of body-part positions* using http://www.mousemotorlab.org/deeplabcut[DeepLabCut].
+.. On-line evaluation of *arbitrary posture conditions* based on the estimated body-part positions.
+.. *Fast output-trigger generation* (<1 ms) using the https://doi.org/10.5281/zenodo.3843623[FastEventServer] program.
+. *Brightness/contrast adjustment* for on-line display.
+. *Storage of frames* into the NumPy-style zip archive.
+
+== Installation
+
+=== Requirements
+
+==== Minimum requirements
+
+At the very basics (i.e. acquisition), you need the followings:
+
+. *A linux computer* (tested on https://releases.ubuntu.com/18.04.5/[Ubuntu 18.04 LTS])
+. An installation of **Python, version >=3.4**. We recommend installing the following libraries using e.g. https://www.anaconda.com/[Anaconda]:
+.. NumPy
+.. Matplotlib
+.. python-opencv
+.. PyQt (required for pyqtgraph)
+.. http://pyqtgraph.org/[pyqtgraph] (through `pip`, instead of through `conda`)
+. A Video4Linux2-compliant *(high-speed) video camera* (recommended to use devices from https://www.theimagingsource.com/[ImagingSource] since the program is tuned up for them)
+
+==== Requirements for on-line position estimation
+
+In addition, the on-line position-estimation feature requires the followings in your environment:
+
+. An installation of http://www.mousemotorlab.org/deeplabcut[*DeepLabCut*] (any versions after 1.11 should work).
+. For a faster working of DeepLabCut, *NVIDIA graphics board with a large amount of RAM* would be needed. For example, running DeepLabCut on ResNet-50 requires ~10.6 GB of RAM, so we use https://www.nvidia.com/en-eu/geforce/graphics-cards/rtx-2080-ti/[GeForce RTX 2080 Ti] that has 11 GB on-board RAM.
+
+==== Requirements for fast-trigger generation
+
+Finally, the fast-trigger feature requires the followings:
+
+. The https://doi.org/10.5281/zenodo.3843623[*FastEventServer*] *server program*. If you use a 64-bit linux computer (it is most likely these days), you can use the `FastEventServer_linux_64bit` pre-built program bundled with the repository, and do not have to build it yourself.
+. An https://store.arduino.cc/arduino-uno-rev3[*Arduino UNO*] or its clone, flashed using the https://doi.org/10.5281/zenodo.3515998[arduino-fasteventtrigger] program.
+
+[WARNING]
+=========
+*IMPORTANT NOTE*: by installing `arduino-fasteventtrigger`, in reality, we *only make use of the serial-to-USB conversion tip on the UNO (i.e. https://www.microchip.com/wwwproducts/en/ATmega16U2[ATmega16U2])*. This means:
+
+- Make sure that your UNO clone has the ATmega16U2 as its converter chip.
+- Other USB-based boards that uses the ATmega16U2 chip _may_ work (although not recommended or supported).
+
+=========
+
+=== Install procedures
+
+. (Optional) set up a DeepLabCut environment.
+. Install the libraries specified in "minimum requirements" (in your DeepLabCut environment, in case it applies).
+. Install `timedcapture`: this is the library for video acquisition. Follow the installation procedure in the repository.
+. Install the `pose-trigger` module:
+.. Clone this repository.
+.. Open this repository in `Terminal`.
+.. Run `pip install .` on `Terminal`.
+
+[NOTE]
+Upon the public release of Pose-Trigger in the future, both `timedcapture` and `pose-trigger` packages will be made available in PyPI. One will be able to install these packages through `pip`.
+
+== User's guide
+
+=== Launching Pose-Trigger
+
+. Open `Terminal`.
+. Run `pose-trigger` on `Terminal`.
+
+[NOTE]
+When being run without a parameter, Pose-Trigger will use the device on `/dev/video0` by default. In case you want to use e.g. `/dev/video1`, specify the device as the parameter, i.e. run `pose-trigger /dev/video1`.
