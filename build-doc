@@ -1,0 +1,2 @@
+#!/bin/bash
+asciidoctor-pdf -a icons=font README.adoc
