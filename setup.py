@@ -38,7 +38,7 @@ setuptools.setup(
     author='Keisuke Sehara',
     author_email='keisuke.sehara@gmail.com',
     license='MIT',
-    install_requires=['pyqtgraph', 'timedcapture'],
+    install_requires=['numpy', 'matplotlib', 'opencv-python', 'pyqtgraph', 'timedcapture>=0.2'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
@@ -47,5 +47,6 @@ setuptools.setup(
         ],
     packages=setuptools.find_packages(),
     entry_points={
+        "console_scripts": [ "lvcapture=labvideocapture:main" ]
     }
 )

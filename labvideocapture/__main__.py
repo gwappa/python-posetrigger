@@ -23,5 +23,5 @@
 #
 
 if __name__ == "__main__":
-    from . import run_main
-    run_main()
+    from . import main
+    main()
