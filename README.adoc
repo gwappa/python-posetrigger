@@ -1,6 +1,16 @@
 = Pose-Trigger
-:toc:
+:doctype: book
 :toclevels: 3
+:toc:
+:icons: font
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 Pose-Trigger is a python application for real-time, closed-loop application
 of TTL trigger generation based on the pose of the subject.
