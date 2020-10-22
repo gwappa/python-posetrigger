@@ -48,7 +48,7 @@ At the very basics (i.e. acquisition), you need the followings:
 .. python-opencv
 .. PyQt (required for pyqtgraph)
 .. http://pyqtgraph.org/[pyqtgraph] (through `pip`, instead of through `conda`)
-. A Video4Linux2-compliant *(high-speed) 16-bit monochrome video camera* (recommended to use devices from https://www.theimagingsource.com/[ImagingSource] since the program is tuned up for them)
+. a 16-bit monochrome video camera from https://www.theimagingsource.com/[ImagingSource]. Other Video4Linux2-compliant cameras should also work with a few adjustments in the code, but will require some efforts.
 
 ==== Requirements for on-line position estimation
 
@@ -75,7 +75,34 @@ Finally, the fast-trigger feature requires the followings:
 
 ==== Reference setup specifications
 
-(TODO)
+We develop and test Pose-Trigger in the following environment:
+
+===== Hardware
+
+.Table Reference setup hardware specifications
+[%header]
+|===
+| Part name | Model type
+| CPU       | 3.7 GHz Core i7-9700K
+| RAM       | 64 GB DDR4-3200
+| GPU       | NVIDIA GeForce RTX 2080 Ti (11 GB RAM)
+| Camera    | ImagingSource DMK 37BUX287
+| Output board | Arduino UNO, rev. 2 (clone), with `arduino-fasteventtrigger`
+|===
+
+===== Software
+
+.Table Reference setup software environment
+[%header]
+|===
+| Software           | Specification
+| Operating system   | Ubuntu 18.04 LTS
+| Python environment | Anaconda3, Python 3.7.7
+| CUDA Toolkit       | version 10.1 (through `conda`)
+| Tensorflow         | version 1.13.1 (`tensorflow-gpu` package of `conda`)
+| DeepLabCut         | version 2.1.3
+| NumPy              | version 1.19.1 (through `conda`)
+|===
 
 === Install procedures
 
@@ -92,7 +119,7 @@ Install all the python packages in your DeepLabCut environment, in case it appli
 [TIP]
 Upon the public release of Pose-Trigger in the future, both `timedcapture` and `pose-trigger` packages will be made available in PyPI. One will be able to install these packages through `pip`.
 
-== User guide
+== Quick guide
 
 === Launching Pose-Trigger
 
@@ -101,6 +128,16 @@ Upon the public release of Pose-Trigger in the future, both `timedcapture` and `
 
 [TIP]
 When being run without a parameter, Pose-Trigger will use the device on `/dev/video0` by default. In case you want to use e.g. `/dev/video1`, specify the device as the parameter, i.e. run `pose-trigger /dev/video1`.
+
+=== Organization of the main window
+
+image::resources/Layout_Overview.png[Overview of the main window]
+
+The Pose-Trigger main window can be divided into three groups:
+
+. The *Capture* buttons (yellow) is for starting/stopping acquisition.
+. The *Preview* panel (green) is an on-line preview of the acquired video frames. If body position-estimation is activated, estimated positions will be shown as colored circles, too.
+. In the *Settings* panel (blue), you can configure how acquisition is performed.
 
 === Capturing videos
 
@@ -112,6 +149,9 @@ There are two modes of running for Pose-Trigger:
 . *ACQUIRE mode*: captures video frames _and_ stores acquired data
 
 You can start/stop either of the capturing modes by clicking on the button at the bottom of the main window.
+
+[IMPORTANT]
+*Pose-Trigger does _not_ stream data into storage during acquisition!* During acquisition, it keeps all the data in-memory. The data will be written out to a file only _after_ acquisition. The duration of acquisition will be thus limited to the order of 1–2 minutes.
 
 [IMPORTANT]
 ====
@@ -128,20 +168,20 @@ Currently, the following parameters are "hard-coded" and used as default:
 
 The data are saved in the NumPy zip-file format (i.e. ".npz" file). Each file includes the following entries:
 
-(TODO)
+.Table Entries in saved files
+[%header]
+|===
+| Name         | Always there?  | Description
+| `frames`     | Yes            | frame data, with the 3-D shape being (frame-index, height, width)
+| `timestamps` | Yes            | 1-D array containing unix timestamps in seconds
+| `metadata`   | Yes            | a JSON-serialized text object containing information on acquisition configuration
+| `estimation` | No (Optional)  | when a DeepLabCut project is selected; 3-D array with the (frame-index, parameter) shape
+| `trigger_status` | No (Optional) | when pose-evaluation is enabled; 1-D boolean array of evaluation results
+|===
 
+(TODO: examples)
 
-=== Panel guide: an overview
-
-image::resources/Layout_Overview.png[Overview of the main window]
-
-The Pose-Trigger main window can be divided into three groups:
-
-. The *Capture* buttons (yellow) is for starting/stopping acquisition.
-. The *Preview* panel (green) is an on-line preview of the acquired video frames. If body position-estimation is activated, estimated positions will be shown as colored circles, too.
-. In the *Settings* panel (blue), you can configure how acquisition is performed.
-
-=== Panel guide: individual settings
+=== Panel-by-panel guide
 
 ==== "Camera" panel
 
