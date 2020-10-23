@@ -1,6 +1,6 @@
 = Pose-Trigger
 :doctype: book
-:toclevels: 3
+:toclevels: 2
 :toc:
 :icons: font
 
@@ -15,6 +15,7 @@ endif::[]
 Pose-Trigger is a python application for real-time, closed-loop application
 of TTL trigger generation based on the pose of the subject.
 
+.A screenshot of a working Pose-Trigger app (development version)
 image::resources/Screenshot.png[A screenshot of a working Pose-Trigger app (in a development version)]
 
 == Introduction
@@ -35,9 +36,7 @@ The current version of the software features:
 
 == Installation
 
-=== Requirements
-
-==== Minimum requirements
+=== Minimum installation requirements
 
 At the very basics (i.e. acquisition), you need the followings:
 
@@ -50,14 +49,14 @@ At the very basics (i.e. acquisition), you need the followings:
 .. http://pyqtgraph.org/[pyqtgraph] (through `pip`, instead of through `conda`)
 . a 16-bit monochrome video camera from https://www.theimagingsource.com/[ImagingSource]. Other Video4Linux2-compliant cameras should also work with a few adjustments in the code, but will require some efforts.
 
-==== Requirements for on-line position estimation
+=== Installation requirements: on-line position estimation
 
 In addition, the on-line position-estimation feature requires the followings in your environment:
 
 . An installation of http://www.mousemotorlab.org/deeplabcut[*DeepLabCut*] (any versions after 1.11 should work).
 . For a faster working of DeepLabCut, *NVIDIA graphics board with a large amount of RAM* would be needed. For example, running DeepLabCut on ResNet-50 requires ~10.6 GB of RAM, so we use https://www.nvidia.com/en-eu/geforce/graphics-cards/rtx-2080-ti/[GeForce RTX 2080 Ti] that has 11 GB on-board RAM.
 
-==== Requirements for fast-trigger generation
+=== Installation requirements: fast-trigger generation
 
 Finally, the fast-trigger feature requires the followings:
 
@@ -69,15 +68,15 @@ Finally, the fast-trigger feature requires the followings:
 *IMPORTANT NOTE*: `arduino-fasteventtrigger`, in reality, will *only make use of the serial-to-USB conversion tip on the UNO (i.e. https://www.microchip.com/wwwproducts/en/ATmega16U2[ATmega16U2])*. This means:
 
 - Make sure that your UNO clone has the ATmega16U2 as its converter chip.
-- Other USB-based boards that uses the ATmega16U2 chip _may_ work (although not recommended or supported).
+- Other USB-based boards that uses the ATmega16U2 chip _may_ work (not recommended nor supported).
 
 =========
 
-==== Reference setup specifications
+=== Reference setup specifications
 
 We develop and test Pose-Trigger in the following environment:
 
-===== Hardware
+==== Hardware
 
 .Table Reference setup hardware specifications
 [%header]
@@ -90,7 +89,7 @@ We develop and test Pose-Trigger in the following environment:
 | Output board | Arduino UNO, rev. 2 (clone), with `arduino-fasteventtrigger`
 |===
 
-===== Software
+==== Software
 
 .Table Reference setup software environment
 [%header]
@@ -108,13 +107,14 @@ We develop and test Pose-Trigger in the following environment:
 
 Install all the python packages in your DeepLabCut environment, in case it applies.
 
-. (Optional) set up a DeepLabCut environment.
+. If you need DeepLabCut, install it first.
 . Install the libraries specified in "minimum requirements".
 . Install `timedcapture`: this is the library for video acquisition. Follow the installation procedure in the repository.
 . Install the `pose-trigger` module:
 .. Clone this repository.
 .. Open this repository in `Terminal`.
 .. Run `pip install .` on `Terminal`.
+. You can install `FastEventServer` and connect Arduino at any moment during the procedure (please refer to Appendix).
 
 [TIP]
 Upon the public release of Pose-Trigger in the future, both `timedcapture` and `pose-trigger` packages will be made available in PyPI. One will be able to install these packages through `pip`.
@@ -131,6 +131,7 @@ When being run without a parameter, Pose-Trigger will use the device on `/dev/vi
 
 === Organization of the main window
 
+.Overview of the main window
 image::resources/Layout_Overview.png[Overview of the main window]
 
 The Pose-Trigger main window can be divided into three groups:
@@ -181,10 +182,11 @@ The data are saved in the NumPy zip-file format (i.e. ".npz" file). Each file in
 
 (TODO: examples)
 
-=== Panel-by-panel guide
+== Panel-by-panel guide
 
-==== "Camera" panel
+=== "Camera" panel
 
+."Camera" panel for capture-parameter settings
 image::resources/Panels_camera.png[Capture parameter settings]
 
 Here, you can set the exposure and the gain of each video frame acquisition.
@@ -192,8 +194,9 @@ Here, you can set the exposure and the gain of each video frame acquisition.
 [NOTE]
 For the time being, the image format is restricted to 16-bit grayscale, with the 640x480 frame size (otherwise there will be an unexpected behavior).
 
-==== "Preprocessing" panel
+=== "Preprocessing" panel
 
+."Preprocessing" settings
 image::resources/Panels_preprocessing.png[Preprocessing settings]
 
 This controls the brightness/contrast settings for "live" video frames. It controls signal conditioning parameters for:
@@ -203,8 +206,9 @@ This controls the brightness/contrast settings for "live" video frames. It contr
 
 On the other hand, *the raw, unconditioned images are used* for data storage.
 
-==== "Acquisition" panel
+=== "Acquisition" panel
 
+."Acquisition" timing control
 image::resources/Panels_acquisition.png[Acquisition timing control]
 
 Here you can set the (targeted) acquisition intervals. For example, if you want to have Pose-Trigger running at 50 Hz, set this interval to 20 ms.
@@ -212,13 +216,14 @@ Here you can set the (targeted) acquisition intervals. For example, if you want 
 [NOTE]
 For the time being, you can only choose to use the busy-wait timing-generation mechanism.
 
-==== "DeepLabCut evaluation" panel
+=== "DeepLabCut evaluation" panel
 
+."Evaluation" mode control
 image::resources/Panels_evaluation.png[Evaluation mode control]
 
 Here, you can configure how DeepLabCut should work in real-time.
 
-===== Project selection
+==== Project selection
 
 By using the "Select" button, you can select your DeepLabCut project of choice. Conversely, by clicking on the "Clear" button, you can un-set the project.
 
@@ -226,7 +231,7 @@ When a project is selected, the panel shows the body-part labels being registere
 
 As long as a project is selected here, body-part position estimation occurs during video-capture processes. Estimated positions will also be stored in the data file in the case of the `ACQUIRE` mode.
 
-===== Pose evaluation
+==== Pose evaluation
 
 You can enable pose evaluation by ticking the "Enable evaluation" button. Evaluation occurs using *the boolean expression entered in the "Expression" field*. The "expression" can be any Python one-line expression, but it has to be evaluated to be a boolean.
 
@@ -247,25 +252,27 @@ In addition, to enable testing of the output latency at the trigger-generation s
 --
 
 
-==== "Trigger generation" panel
+=== "Trigger generation" panel
 
+."Trigger" mode control
 image::resources/Panels_triggering.png[Trigger mode control]
 
 Here, you can test and control trigger generation.
 
-===== Transferring evaluation results to FastEventServer
+==== Transferring evaluation results to FastEventServer
 
 By ticking "Enable trigger output", it starts sending the result of evaluation (true/false value) to FastEventServer.
 
-===== Manually toggling the trigger
+==== Manually toggling the trigger
 
 When trigger-output based on evaluation results is disabled, you can manually toggle the trigger output on and off, using the "Toggle manually" button.
 
 [IMPORTANT]
 For the time being, the "trigger UDP port" cannot be specified; if Pose-Trigger fails to connect to FastEventServer on port 11666 at the beginning of its launching, it just disables the trigger-output functionality.
 
-==== "Storage" panel
+=== "Storage" panel
 
+."Storage" control
 image::resources/Panels_storage.png[Storage control]
 
 Here, you can control how acquired data are stored.
@@ -278,3 +285,96 @@ Be cautious of Pose-Trigger *automatically overwriting existing files*! Try to i
 == How Pose-Trigger works: concepts
 
 (TODO)
+
+== Appendix
+
+TODO: probably it is better to bundle working binaries.
+
+=== FastEventServer
+
+(TODO)
+
+=== The Arduino output board
+
+==== Pinouts
+
+It only uses the *6-pin header of the ATmega16U2 chip* on the UNO (see below).
+Only the `EVENT` channel (the `PB1` pin) is used for trigger outputs in Pose-Trigger.
+
+In combination with the `GND` pin (in the top-left of the image), you can use the output as a TTL signal.
+
+.Location of the 6-pin header for ATmega16U2
+image::resources/ATmega16U2-header.jpg[Location of the 6-pin header for ATmega16U2]
+
+.The location of EVENT pin on the 6-pin header (adapted from the image by www.bq.com, CC-BY-SA 4.0)
+image::resources/header-pinout.png[6-pin header pinout]
+
+
+==== Communication
+
+You can use the serial communication to communicate with the board, without a running FastEventServer.
+
+[TIP]
+Since the board, as a USB device, only "emulates" the serial port, you can communicate with the board no matter the baud-rate setting.
+
+[TIP]
+If you use the board from FastEventServer, you cannot open it or use it separately.
+
+===== Finding which device represents the output board
+
+Plug in and out the board, and run `ls -l /dev | grep ttyACM` each time. There must be a name (e.g. `ttyACM0`) that appears only when you plug in the board.
+
+===== Commands
+
+A single character corresponds to a command:
+
+.Command set
+|===
+|Character |Meaning
+|`L`       |`EVENT`: turn on the output
+|`H`       |`CLEAR`: turn off the output
+|===
+
+==== Setting up
+
+The original repository does not provide a working copy of the program, so you need to build it.
+
+Basically you can follow the procedures written in the https://doi.org/10.5281/zenodo.3515998[arduino-fasteventtrigger repository], but the sequence is depicted here briefly, too.
+
+===== Concepts
+
+In essence, installation requires:
+
+. *Downloading of the code from the https://doi.org/10.5281/zenodo.3515998[arduino-fasteventtrigger repository]*. Note that it does not provide a working binary, so you need to compile it yourself (see below).
+. *Downloading of the http://www.fourwalledcubicle.com/LUFA.php[LUFA library]*: it is used in Arduino project to turn an AVR microcontroller to a USB device, so that users can communicate with Arduino's using USB cables.
+. *Compilation of the code*: it requires a https://www.arduino.cc/en/Reference/UsingAVR[cross-compiler] (i.e. a program working on a desktop computer to build a program working on a chip on Arduino).
+. *Transfer of the binary* into the serial-usb chip of Arduino: here, a special mode of the USB-serial chip, being referred to as https://www.arduino.cc/en/Hacking/DFUProgramming8U2[Device Firmware Update (DFU) mode], is used. Using the DFU mode, you can upload the program to the Arduino chip directly through the USB cable.
+
+===== Procedures
+
+Procedures are as below:
+
+. *Install required libraries and binaries*:
+.. http://www.fourwalledcubicle.com/LUFA.php[LUFA] (*IMPORTANT: use version 100807–111009*): download the ZIP archive, and extract in whichever directory you feel comfortable. The specified versions are those being used for development of Arduino.
+.. http://www.nongnu.org/avr-libc/[avr-gcc cross-compiler]: on linux, you can install it by running e.g. `sudo apt-get install avr-gcc`. Alternatively (at least on the Mac), you can use the binaries coming with the Arduino GUI (this is the strategy adopted by `add_avr.sh` in the `arduino-fasteventtrigger` repository).
+.. http://dfu-programmer.github.io/[dfu-programmer]: this is the program (on the PC side) to transfer programs to the Arduino chip. On linux, you should also be able to install it by running `sudo apt-get install dfu-programmer`.
+. *Make sure that your Terminal can find the necessary programs*, by running the command `which <program-name>`:
+.. `avr-gcc`
+.. `avr-objcopy`
+.. `avr-objdump`
+.. `avr-size`
+.. `avr-ar`
+.. `avr-nm`
+.. `dfu-programmer`
+. *Download the https://doi.org/10.5281/zenodo.3515998[arduino-fasteventtrigger repository]*; place the extracted / cloned directory under the "Projects" directory of LUFA.
+. *Compile the program*: open the "arduino-fasteventtrigger" repository in Terminal, and run `make clean && make`. This will build the program to be uploaded to the Arduino chip.
+. *Put the Arduino into the DFU mode*:
+.. First, connect Arduino to the PC using the USB cable.
+.. (On linux) Check that the PC recognize the Arduino: plug the device in and out, and run `ls -l /dev | grep ttyACM` each time. There must be a name (e.g. `ttyACM0`) that appears only when you plug in the Arduino.
+.. While keeping the Arduino connected to the PC, connecting the `RESET` and `GND` pins of the ATmega16U2 6-pin header using a lead (see the image below, or refer to https://www.arduino.cc/en/Hacking/DFUProgramming8U2[the guide in the Arduino project]).
+.. Now run `ls -l /dev | grep ttyACM` again on the Terminal, and make sure that you do _not_ find the name of the Arduino on the output. This disappearance is the hallmark of the Arduino turning into the DFU mode.
+. *Transfer the program*: in the `arduino-fasteventtrigger` directory, run `make dfu`. In case of any errors (they can occur from time to time), try running the same command again.
+. *Check output signals*: the best way is to use a serial-monitor program, and send the commands. Alternatively, you may also be able to check it by the "Toggle Manually" button on the Pose-Trigger main window.
+
+.Pins to turn the chip into the DFU mode (from: https://medium.com/arduino-community/diy-arduino-wireless-keyboard-be9ff73f246c)
+image::resources/dfu-mode.jpeg[Pins to turn the chip into the DFU mode]
