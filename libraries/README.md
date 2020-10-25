@@ -5,9 +5,9 @@
 For output boards, the following options are provided by default:
 
 - [**Arduino-fasteventoutput**](#arduino-fasteventoutput) (recommended): requires a few extra steps to work on, but the output is faster.
-- [**SimpleArduinoOutput**](#SimpleArduinoOutput): only the [Arduino IDE](https://www.arduino.cc/en/Main/Software) is required, without any complex installation procedures. On the other hand, there may be a little bit of overhead (1–2 ms) in the output latency.
+- [**SimpleArduinoOutput**](#simplearduinooutput): only the [Arduino IDE](https://www.arduino.cc/en/Main/Software) is required, without any complex installation procedures. On the other hand, there may be a little bit of overhead (1–2 ms) in the output latency.
 
-To let Pose-Trigger make use of the output board, install [**FastEventServer**](#FastEventServer).
+To let Pose-Trigger make use of the output board, install [**FastEventServer**](#fasteventserver).
 
 ## Arduino-fasteventoutput
 
