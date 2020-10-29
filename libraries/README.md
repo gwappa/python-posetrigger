@@ -13,6 +13,10 @@ To let Pose-Trigger make use of the output board, install [**FastEventServer**](
 
 This is a program to be uploaded to your Arduino UNO so that it can be used as a fast-output board. Prerequisites and installation procedures are as follows.
 
+### License
+
+2019 Keisuke Sehara, the MIT License
+
 ### Installation
 
 #### Prerequisite: Arduino UNO
@@ -52,7 +56,7 @@ All the procedures are described in details in the [official Arduino website](ht
    - use  `ls -l /dev | grep ttyACM`  again.
    - The device will show up only after un-plugging the board and plugging it in again.
 
-**NOTE**: by writing `fasteventoutput` to the Arduino board, it cannot be used any more as an Arduino. In case you want to "resume" the Arduino functionalities, write back the [official Arduino firmware](https://github.com/arduino/ArduinoCore-avr/tree/master/firmwares/atmegaxxu2) using `dfu-programmer` again by following the same procedures. 
+**NOTE**: by writing `fasteventoutput` to the Arduino board, it cannot be used any more as an Arduino. In case you want to "resume" the Arduino functionalities, write back the [official Arduino firmware](https://github.com/arduino/ArduinoCore-avr/tree/master/firmwares/atmegaxxu2) using `dfu-programmer` again by following the same procedures.
 
 #### (Optional) Building the code yourself
 
@@ -126,6 +130,10 @@ By using FastEventServer, you can:
 
 - receive trigger commands from any client program via UDP communication.
 - generate trigger output using the Arduino-based output board.
+
+### License
+
+2020 Keisuke Sehara, the MIT License
 
 ### Installation
 
@@ -204,4 +212,3 @@ The FastEventServer protocol uses a 8-bit index to identify the response to the 
   - The second byte contains the current state of the output, in terms of binary flags. Thus, if the bit `0x10` is flagged, the output is on.
 
 **IMPORTANT NOTE**: the default Python client in Pose-Trigger assumes that all the requests must be immedeately acknowledged by the server. Failure in communication with the server (e.g. if a request/response packet is lost in the network traffic) immediately results in a halt of the Pose-Trigger program.
-

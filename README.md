@@ -9,11 +9,11 @@ of TTL trigger generation based on the pose of the subject.
 
 ## Documentation
 
-- [HTML version](#TODO)
-- [PDF version](#TODO)
+- [On-line HTML version](#TODO)
+- [PDF version](pose-trigger-documentation.pdf)
 
 ## License
 
 - Code files in this repository: 2020 Keisuke Sehara and Paul Zimmer-Harwood, the MIT License
 - Binaries in the [libraries](libraries) directory: refer to documents in the source repositories
-- Media in the [resources](resources) directory: 2020 Keisuke Sehara, Creative Commons Attribution 4.0 International
+- Contents of the [resources](resources) and [docs](docs) directory, including the documentation: Creative Commons CC0 1.0 Universal Public Domain Dedication

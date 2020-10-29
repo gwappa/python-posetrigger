@@ -23,6 +23,11 @@ of TTL trigger generation based on the pose of the subject.
    quick
    panels
 
+.. image:: http://i.creativecommons.org/p/zero/1.0/88x31.png
+
+To the extent possible under law, the authors has waived all copyright and related or neighboring rights to Pose-Trigger documentation (under the legal code `CC0 1.0`_).
+
+.. _CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/
 
 ..
     Indices and tables
