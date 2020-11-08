@@ -30,9 +30,11 @@ from cv2 import resize as _resize, \
 try:
     import dlclib as _dlclib
     HAS_DLC = True
-except ImportError:
+except ImportError as e:
+    from traceback import print_exc as _print_exc
+    _print_exc()
     HAS_DLC = False
-    
+
 from . import debug as _debug
 from .expression import parse as _parse_expression, \
                         ParseError as _ParseError
