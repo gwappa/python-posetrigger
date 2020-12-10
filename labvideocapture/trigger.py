@@ -152,6 +152,8 @@ class TriggerOutput(QtCore.QObject):
             acq.setTriggerOutput(self.updateOutput if self._triggered == True else None)
             if mode == "ACQUIRE":
                 self._conn.sync = True
+
+            acq.setStaticMetadata("trigger", self._triggered)
         else:
             # ending
             self._acq = None

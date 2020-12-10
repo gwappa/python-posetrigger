@@ -30,6 +30,10 @@ from . import trigger as _trigger
 def _do_nothing(*args, **kwargs):
     pass
 
+def _mock_updateWithAcquisition(mode, acq):
+    if mode != "":
+        acq.setStaticMetadata("trigger", None)
+
 class TriggerControl(QtWidgets.QGroupBox):
 
     def __init__(self, parent=None):
@@ -45,7 +49,7 @@ The trigger-generation functionality will be disabled.
 
 To enable it, launch FastEventServer first, and re-launch LabVideoCapture.""")
             self._model  = None
-            self.updateWithAcquisition = _do_nothing
+            self.updateWithAcquisition = _mock_updateWithAcquisition
             self.teardown              = _do_nothing
 
         self._enable = QtWidgets.QCheckBox("Enable trigger output")
