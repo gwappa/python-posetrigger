@@ -64,6 +64,7 @@ class IntervalGeneration(QtCore.QThread):
         self._timer.setSingleShot(False)
         self._timer.setInterval(interval_ms)
 
+        acquisition.setStaticMetadata("interval", dict(mode="interval-timer", target_ms=interval_ms))
         acquisition.acquisitionStarting.connect(self.start)
         self.started.connect(self._timer.start)
         self.started.connect(self.raise_priority)
@@ -88,6 +89,7 @@ class BusyWait(QtCore.QObject):
         self._timing   = QtCore.QMutex()
         self._waitAcq  = acquisition.triggerAndWait
 
+        acquisition.setStaticMetadata("interval", dict(mode="busy-wait", target_ms=interval_ms))
         acquisition.acquisitionStarting.connect(self._thread.start)
         acquisition.acquisitionEnding.connect(self.signal, QtCore.Qt.DirectConnection)
         self._thread.started.connect(self.run, QtCore.Qt.DirectConnection)
