@@ -157,7 +157,7 @@ class ProjectSelector(QtCore.QObject):
 
 class EvaluationEditor(QtCore.QObject):
     evaluationEnabled = QtCore.pyqtSignal(bool)
-    expressionChanged = QtCore.pyqtSignal(object)
+    expressionChanged = QtCore.pyqtSignal(object, str)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -209,7 +209,7 @@ class EvaluationEditor(QtCore.QObject):
                 QtWidgets.QMessageBox.warning(self._field, "Failed to update expression", f"{e}")
                 self._field.setStyleSheet("color: red")
                 return
-        self.expressionChanged.emit(expr)
+        self.expressionChanged.emit(expr, content)
 
     def setEnabled(self, val: bool):
         self._enable.setEnabled(val)

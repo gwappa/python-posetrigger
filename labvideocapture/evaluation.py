@@ -61,6 +61,7 @@ class Evaluation(QtCore.QObject):
         self._cfgpath    = None
         self._parts      = []
         self._session    = None
+        self._expression_str = None
         self._expression = return_false
         self._origshape  = None
         self._buffer     = None
@@ -71,9 +72,38 @@ class Evaluation(QtCore.QObject):
         self._amp        = (self._vmax - self._vmin) // 255
         self.HAS_DLC     = HAS_DLC
 
+    @property
+    def projectname(self):
+        if self._cfgpath is None:
+            return None
+        else:
+            return self._cfgpath.parent.name
+
+    @property
+    def evaluation(self):
+        if self._evaluated == True:
+            return self._expression_str
+        else:
+            return None
+
+    @property
+    def vmin(self):
+        if self._cfgpath is None:
+            return None
+        else:
+            return self._vmin
+
+    @property
+    def vmax(self):
+        if self._cfgpath is None:
+            return None
+        else:
+            return self._vmax
+
     def updateWithProject(self, path: str):
         if self.HAS_DLC == True:
             if path == "":
+                self._cfgpath = None
                 self._parts = []
                 self.bodypartsUpdated.emit(tuple())
                 self._session = None
@@ -90,6 +120,7 @@ class Evaluation(QtCore.QObject):
                 self.bodypartsUpdated.emit(self._parts)
             except Exception as e:
                 self.errorOccurred.emit("failed to open the DLC project", f"{e}")
+                self._cfgpath = None
                 return
 
             # try to load session
@@ -101,13 +132,15 @@ class Evaluation(QtCore.QObject):
         _debug(f"evaluation --> {val}")
         self._evaluated = val
 
-    def setExpression(self, expr):
+    def setExpression(self, expr, expr_str):
         if expr is None:
             _debug(f"cleared expression")
             self._expression = return_false
+            self._expression_str = None
         else:
-            _debug(f"expression --> {expr}")
+            _debug(f"expression --> '{expr_str}' ({expr})")
             self._expression = expr
+            self._expression_str = expr_str
 
     def updateWithAcquisition(self, mode, acq):
         if self.HAS_DLC:
@@ -116,12 +149,18 @@ class Evaluation(QtCore.QObject):
                 acq.setEvaluator(self.estimateFromFrame)
                 if self._session is not None:
                     self._prepareBuffer(acq.width, acq.height)
+
+                metadata = dict((attr, getattr(self, attr)) for attr in \
+                                ("projectname", "evaluation", "vmin", "vmax"))
+                acq.setStaticMetadata("estimation", metadata)
                 self.evaluationModeLocked.emit(True)
             else:
                 # stopping acquisition
                 if self._session is not None:
                     self._clearBuffer()
                 self.evaluationModeLocked.emit(False)
+        else:
+            acq.setStaticMetadata("estimation", "disabled")
 
     def _prepareBuffer(self, width, height):
         self._origshape = (height, width, 1)
