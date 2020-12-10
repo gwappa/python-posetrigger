@@ -87,14 +87,14 @@ class Evaluation(QtCore.QObject):
             return None
 
     @property
-    def vmin(self):
+    def scaling_min(self):
         if self._cfgpath is None:
             return None
         else:
             return self._vmin
 
     @property
-    def vmax(self):
+    def scaling_max(self):
         if self._cfgpath is None:
             return None
         else:
@@ -151,7 +151,7 @@ class Evaluation(QtCore.QObject):
                     self._prepareBuffer(acq.width, acq.height)
 
                 metadata = dict((attr, getattr(self, attr)) for attr in \
-                                ("projectname", "evaluation", "vmin", "vmax"))
+                                ("projectname", "evaluation", "scaling_min", "scaling_max"))
                 acq.setStaticMetadata("estimation", metadata)
                 self.evaluationModeLocked.emit(True)
             else:
