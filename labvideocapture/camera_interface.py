@@ -55,8 +55,11 @@ class CameraInterface(QtGui.QGroupBox):
 
     def updateWithAcquisition(self, mode, acq):
         if mode == "ACQUIRE":
+            self._device.strobe = True
             for attr in ("width", "height", "exposure_us", "gain"):
                 acq.setStaticMetadata(attr, getattr(self._device, attr))
+        else:
+            self._device.strobe = False
 
     @property
     def path(self):
