@@ -35,6 +35,7 @@ class CameraInterface(QtGui.QGroupBox):
     def __init__(self, device, parent=None):
         super().__init__(f"Camera '{device.path}'", parent=parent)
         self._device   = device
+        self._has_strobe = True
 
         self._exposure = QtGui.QSpinBox()
         self._exposure.setMinimum(1)
@@ -55,11 +56,21 @@ class CameraInterface(QtGui.QGroupBox):
 
     def updateWithAcquisition(self, mode, acq):
         if mode == "ACQUIRE":
-            self._device.strobe = True
+            if self._has_strobe == True:
+                try:
+                    self._device.strobe = True
+                except RuntimeError:
+                    _debug("failed to turn on the strobe output (probably not a supported device)")
+                    self._has_strobe = False
             for attr in ("width", "height", "exposure_us", "gain"):
                 acq.setStaticMetadata(attr, getattr(self._device, attr))
         else:
-            self._device.strobe = False
+            if self._has_strobe == True:
+                try:
+                    self._device.strobe = False
+                except RuntimeError:
+                    _debug("failed to control the strobe output (probably not a supported device)")
+                    self._has_strobe = False
 
     @property
     def path(self):
