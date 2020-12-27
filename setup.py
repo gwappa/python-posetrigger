@@ -23,17 +23,17 @@
 #
 
 import setuptools
-from labvideocapture import VERSION_STR
+from posetrigger import VERSION_STR
 
-with open("README.md", "r") as fh:
+with open("README.adoc", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='labvideocapture',
+    name='pose-trigger',
     version=VERSION_STR,
-    description='lab video capturing program, based on PyQt.',
+    description='a python application for real-time, closed-loop application of TTL trigger generation based on the pose of the subject',
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/asciidoc",
     url='https://github.com/gwappa/python-labvideocapture',
     author='Keisuke Sehara',
     author_email='keisuke.sehara@gmail.com',
@@ -48,6 +48,6 @@ setuptools.setup(
         ],
     packages=setuptools.find_packages(),
     entry_points={
-        "console_scripts": [ "lvcapture=labvideocapture:main" ]
+        "console_scripts": [ "pose-trigger=posetrigger:main" ]
     }
 )
