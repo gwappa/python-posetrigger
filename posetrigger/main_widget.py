@@ -136,5 +136,6 @@ To enable it, install DeepLabCut (version >=1.11) and DLCLib (version >=1.0.2), 
         return self._frame
 
     def teardown(self):
-        self._camera.teardown()
         self._storage.teardown()
+        self._trigger.teardown()
+        self._camera.teardown() # has to be the last as it can cause seg fault

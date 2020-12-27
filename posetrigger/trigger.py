@@ -129,11 +129,11 @@ class Client:
         self.communicate(event=val)
 
 class TriggerOutput(QtCore.QObject):
-    def __init__(self, parent=None):
+    def __init__(self, port, parent=None):
         super().__init__(parent=parent)
         self._triggered = False
         self._acq       = None
-        self._conn      = Client()
+        self._conn      = Client(port=port)
 
     @property
     def enabled(self):
@@ -163,4 +163,7 @@ class TriggerOutput(QtCore.QObject):
         self._conn.event = val
 
     def teardown(self):
-        self._conn.shutdown()
+        try:
+            self._conn.shutdown()
+        except:
+            pass

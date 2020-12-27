@@ -50,6 +50,9 @@ setuptools.setup(
         'Intended Audience :: Science/Research',
         ],
     packages=setuptools.find_packages(),
+    package_data={
+        "posetrigger": [ "bin/FastEventServer_linux_*" ]
+    },
     entry_points={
         "console_scripts": [
             "pose-trigger=posetrigger:main",
