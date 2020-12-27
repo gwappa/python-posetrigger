@@ -33,6 +33,8 @@ from . import preprocessing_control as _pctrl
 
 from . import debug as _debug
 
+WIDGET_NAME = "Pose-Trigger"
+
 class MainWidget(QtGui.QWidget):
     """the main GUI consisting of camera interface, frame view and acquisition interface."""
     def __init__(self, path="/dev/video0", parent=None):
@@ -78,7 +80,7 @@ To enable it, install DeepLabCut (version >=1.11) and DLCLib (version >=1.0.2), 
         self._layout.setRowStretch(5, 2)
         self._layout.setRowStretch(6, 1)
         self.setLayout(self._layout)
-        self.setWindowTitle("LabVideoCapture")
+        self.setWindowTitle(WIDGET_NAME)
         self.resize(1200,720)
 
     def _connectComponents(self):

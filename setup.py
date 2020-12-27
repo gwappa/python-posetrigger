@@ -25,7 +25,7 @@
 import setuptools
 from posetrigger import VERSION_STR
 
-with open("README.adoc", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -48,6 +48,9 @@ setuptools.setup(
         ],
     packages=setuptools.find_packages(),
     entry_points={
-        "console_scripts": [ "pose-trigger=posetrigger:main" ]
+        "console_scripts": [
+            "pose-trigger=posetrigger:main",
+            "posetrigger=posetrigger:main"
+        ]
     }
 )
