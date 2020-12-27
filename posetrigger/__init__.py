@@ -32,6 +32,10 @@ VERSION_STR = "1.0.2"
 
 DEBUG = True
 
+class InitializationError(RuntimeError):
+    def __init__(self, msg):
+        super().__init__(msg)
+
 def debug(msg, end="\n"):
     import sys
     if DEBUG == True:
@@ -45,9 +49,17 @@ def run(device="/dev/video0"):
         print(f"***device does not exist: {device}")
         return
     from .main_widget import MainWidget
-    from pyqtgraph.Qt import QtGui
+    try:
+        from pyqtgraph.Qt import QtGui
+    except ImportError:
+        print("***failed to load pyqtgraph: install pyqtgraph and PyQt5")
+        return
     app    = QtGui.QApplication([])
-    window = MainWidget(path=device)
+    try:
+        window = MainWidget(path=device)
+    except InitializationError as e:
+        print(f"***{e}")
+        return
     app.aboutToQuit.connect(window.teardown)
     window.show()
     QtGui.QApplication.instance().exec_()

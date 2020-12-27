@@ -24,7 +24,6 @@
 
 from pathlib import Path
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
-import dlclib as _dlclib # TODO: make it optional
 from . import debug as _debug
 from .expression import parse as _parse_expression, \
                         ParseError as _ParseError

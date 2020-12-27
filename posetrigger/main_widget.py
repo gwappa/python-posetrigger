@@ -32,6 +32,7 @@ from . import frame_view as _fview
 from . import preprocessing_control as _pctrl
 
 from . import debug as _debug
+from . import InitializationError as _Error
 
 WIDGET_NAME = "Pose-Trigger"
 
@@ -39,7 +40,14 @@ class MainWidget(QtGui.QWidget):
     """the main GUI consisting of camera interface, frame view and acquisition interface."""
     def __init__(self, path="/dev/video0", parent=None):
         super().__init__(parent)
-        self._device     = _camera.load_device(path)
+        try:
+            self._device     = _camera.load_device(path)
+            msg = ""
+        except RuntimeError as e:
+            msg = f"{e}"
+            self._device = None
+        if self._device is None:
+            raise _Error(f"failed to initialize the device '{path}', please make sure you point to the correct device:\n   {msg}")
         self._camera     = _camera.CameraInterface(self._device)
         self._control    = _actrl.AcquisitionControl(self._device)
         self._storage    = _sctrl.StorageControl()
