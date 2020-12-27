@@ -22,6 +22,7 @@ of TTL trigger generation based on the pose of the subject.
    install
    quick
    panels
+   fasteventserver
 
 .. image:: http://i.creativecommons.org/p/zero/1.0/88x31.png
 

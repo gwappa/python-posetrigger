@@ -5,51 +5,51 @@ Installation
    :local:
    :depth: 3
 
+Installation
+------------
+
+We recommend installing everything through Anaconda3. Make sure your PC satisfies the `requirements`_.
+
+Find the environment file ``posetrigger.yaml`` from the repository, and run the following command in the terminal:
+
+   .. code-block:: Bash
+
+       $ conda env create -f posetrigger.yaml; conda activate posetrigger
+
+You can change the name of the environment by giving the alternative as ``conda env create -n <name> -f posetrigger.yaml``.
+
+.. note::
+    Upon the public release of Pose-Trigger in the future, ``timedcapture``, ``dlclib`` and ``pose-trigger`` packages will be made available in PyPI.
+
+To install FastEventServer, refer to :doc:`Appendix <fasteventserver>`.
+
 .. _requirements:
 
 System requirements
---------------------
+-------------------
 
-.. _minimum requirements:
+Before installing Pose-Trigger, make sure you have set up the following hardware:
 
-Minimum installation requirements
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1. **A linux computer** (tested on `Ubuntu 18.04 LTS`_)
+2. **a 16-bit monochrome video camera** from `ImagingSource`_ (e.g. refer to the :ref:`Reference setup`).
 
-If you have the followings, you can perform acquisition of video frames *without body-part estimation or trigger generation*:
+    .. note:: Other Video4Linux2-compliant cameras should also work with a few adjustments in the code, but will require some efforts.
 
-* **A linux computer** (tested on `Ubuntu 18.04 LTS`_)
-* An installation of **Python, version >=3.4**. We recommend installing the following libraries using e.g. `Anaconda`_:
+3. For a faster working of DeepLabCut, **NVIDIA graphics board with a large amount of RAM** is required.
 
-    * NumPy
-    * Matplotlib
-    * python-opencv
-    * PyQt (required for pyqtgraph)
-    * `pyqtgraph`_ (through ``pip``, instead of through ``conda``)
+    .. note:: For example, running DeepLabCut on ResNet-50 requires ~10.6 GB of RAM,
+        so we use `GeForce RTX 2080 Ti`_ that has 11 GB on-board RAM (refer to the :ref:`Reference setup`).
 
-* **a 16-bit monochrome video camera** from `ImagingSource`_ (e.g. refer to the :ref:`Reference setup`).
-
-.. note:: Other Video4Linux2-compliant cameras should also work with a few adjustments in the code, but will require some efforts.
-
-Requirements for on-line position estimation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The on-line position-estimation feature requires the followings in your environment:
-
-* An installation of `DeepLabCut`_ (any versions after 1.11 should work).
-* For a faster working of DeepLabCut, **NVIDIA graphics board with a large amount of RAM** is required.
-
-.. note:: For example, running DeepLabCut on ResNet-50 requires ~10.6 GB of RAM,
-    so we use `GeForce RTX 2080 Ti`_ that has 11 GB on-board RAM (refer to the :ref:`Reference setup`).
 
 Requirements for trigger-output generation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In addition to the pose-estimation feature, the trigger-output feature requires the followings:
 
-* The `FastEventServer`_ **server program**.
-* An `Arduino UNO`_ or its clone, being flashed with the `arduino-fasteventtrigger`_ program.
+1. The `FastEventServer`_ **server program**.
+2. An `Arduino UNO`_ or its clone, being flashed with the `arduino-fasteventtrigger`_ program.
 
-For installation of the softwares, refer to the README file in the "libraries" directory of the repository.
+For installation of the softwares, refer to :doc:`Appendix: FastEventServer <fasteventserver>`.
 
 .. caution::
     ``arduino-fasteventtrigger``, in reality, will **only make use of the serial-to-USB conversion tip on the UNO (i.e. `ATmega16U2`_)**.
@@ -96,31 +96,9 @@ Software
     NumPy              version 1.19.1 (through `conda`)
     ================== ====================================================
 
-
-Install procedures
--------------------
-
-Install all the python packages in your DeepLabCut environment.
-
-1. If you need DeepLabCut, install it first.
-2. Install the libraries specified in the `minimum requirements`_ section.
-3. Install ``timedcapture``: this is the library for video acquisition.
-4. Install the ``pose-trigger`` module.
-5. You can install ``FastEventServer`` and connect Arduino at any moment during the procedure (please refer to the README file in the "libraries" directory of the repository).
-
-.. note::
-    Upon the public release of Pose-Trigger in the future, both ``timedcapture`` and ``pose-trigger`` packages will be made available in PyPI. One will be able to install these packages through the ``pip install`` command.
-
-    Before this becomes the case, below are the procedures:
-
-    1. Clone the repository.
-    2. Open the cloned repository directory in Terminal.
-    3. Run ``pip install .`` on Terminal.
-
 .. _Ubuntu 18.04 LTS: https://releases.ubuntu.com/18.04.5/
 .. _ImagingSource: https://www.theimagingsource.com/
 .. _Anaconda: https://www.anaconda.com/
-.. _pyqtgraph: http://pyqtgraph.org/
 .. _DeepLabCut: http://www.mousemotorlab.org/deeplabcut
 .. _GeForce RTX 2080 Ti: https://www.nvidia.com/en-eu/geforce/graphics-cards/rtx-2080-ti/
 .. _FastEventServer: https://doi.org/10.5281/zenodo.3843623

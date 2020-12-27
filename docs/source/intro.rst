@@ -41,7 +41,7 @@ The model setup
 ^^^^^^^^^^^^^^^^
 
 .. figure:: ../../resources/model-setup.png
-    :scale: 30%
+    :scale: 40%
 
     The model setup
 
