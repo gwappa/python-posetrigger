@@ -1,7 +1,11 @@
-# run: conda env create -f posetrigger-nodlc.yaml
+# !CAUTION!
+# This environment can not perform pose estimation!
+# Use it only for testing purposes.
+#
+# run: conda env create -f nodlc-posetrigger.yaml
 name: posetrigger-nodlc
 dependencies:
-    - python==3.7.*
+    - python=3.7
     - numpy
     - matplotlib
     - opencv
