@@ -31,8 +31,8 @@ try:
     import dlclib as _dlclib
     HAS_DLC = True
 except ImportError as e:
-    from traceback import print_exc as _print_exc
-    _print_exc()
+    # from traceback import print_exc as _print_exc
+    # _print_exc()
     HAS_DLC = False
 
 from . import debug as _debug

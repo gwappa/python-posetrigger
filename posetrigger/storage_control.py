@@ -27,7 +27,6 @@ from time import time as _now
 import json as _json
 import datetime as _datetime
 import numpy as _np
-import bzar as _bzar
 from . import debug as _debug
 from . import acquisition_control as _actrl
 

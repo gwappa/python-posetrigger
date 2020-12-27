@@ -1,0 +1,13 @@
+# run: conda env create -f posetrigger-nodlc.yaml
+name: posetrigger-nodlc
+dependencies:
+    - python==3.7.*
+    - numpy
+    - matplotlib
+    - opencv
+    - PyQt
+    - cython
+    - pip
+    - pip:
+        - timedcapture
+        - pose-trigger
