@@ -28,7 +28,7 @@ parser = _ap.ArgumentParser(description="real-time capture and closed-loop trigg
 parser.add_argument("device", default="/dev/video0",
     help="the path to the V4L2-compliant (preferrably ImagingSource) capture device.")
 
-VERSION_STR = "1.0.0"
+VERSION_STR = "1.0.1"
 
 DEBUG = True
 
