@@ -1,3 +1,0 @@
-[submodule "libraries/source/arduino-fasteventtrigger"]
-	path = libraries/source/arduino-fasteventtrigger
-	url = https://github.com/gwappa/arduino-fasteventtrigger.git
