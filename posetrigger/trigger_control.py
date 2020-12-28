@@ -37,6 +37,25 @@ def _mock_updateWithAcquisition(mode, acq):
     if mode != "":
         acq.setStaticMetadata("trigger", None)
 
+class ServiceMonitor(QtCore.QThread):
+    errorGenerated = QtCore.pyqtSignal(str)
+
+    def __init__(self, ui, parent=None):
+        super().__init__(parent=parent)
+        self._ui = ui
+        self._ui.launched.connect(self.start)
+        self.errorGenerated.connect(self._ui.warnServerError)
+
+    def run(self):
+        while True:
+            src = _service.read()
+            if src is None:
+                break
+            for line in src.split("\n"):
+                print(line)
+                if line.startswith("***"):
+                    self.errorGenerated.emit(line[3:])
+
 class ServiceControl(QtWidgets.QWidget):
     LAUNCH   = "Launch FastEventServer"
     SHUTDOWN = "Shutdown FastEventServer"
@@ -54,6 +73,7 @@ class ServiceControl(QtWidgets.QWidget):
         self._udpfield     = PortEditor() # TODO: reflect to _model
         self._toggle       = QtWidgets.QPushButton(self.LAUNCH)
         self._toggle.clicked.connect(self.toggle)
+        self._reader       = None
 
         self._layout     = QtGui.QGridLayout()
         self._layout.addWidget(self._driverheader, 0, 0)
@@ -74,12 +94,17 @@ class ServiceControl(QtWidgets.QWidget):
 
     def launch(self):
         _service.launch()
+        self._reader = ServiceMonitor(self)
         self.launched.emit(self._udpfield.value)
         self._toggle.setText(self.SHUTDOWN)
         self.setEditable(False)
 
     def shutdown(self):
         _service.shutdown()
+        if self._reader.wait(500) == False:
+            print("the reader thread is not responding. killing this thread...")
+            self._reader.terminate()
+        self._reader = None
         self._toggle.setText(self.LAUNCH)
         self.setEditable(True)
 
@@ -91,6 +116,12 @@ class ServiceControl(QtWidgets.QWidget):
                      self._udpheader,
                      self._udpfield):
             item.setEnabled(value)
+
+    def warnServerError(self, msg):
+        splitter = msg.index(":")
+        title, body = msg[:splitter], msg[(splitter+1):]
+        QtWidgets.QMessageBox.warning(self, title, body)
+
 
 class TriggerControl(QtWidgets.QGroupBox):
     serviceCanShutdown = QtCore.pyqtSignal()

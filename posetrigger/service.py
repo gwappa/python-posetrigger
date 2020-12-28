@@ -125,8 +125,21 @@ def launch():
     binpath = get_binary_path()
     if proc is None:
         print(f"launching FastEventServer: {binpath.name} {CONFIG_PATH}")
-        proc = _sp.Popen([str(binpath), str(CONFIG_PATH)], bufsize=1)
+        proc = _sp.Popen([str(binpath), str(CONFIG_PATH)],
+                         bufsize=1,
+                         stderr=_sp.PIPE,
+                         text=True)
         _time.sleep(0.5)
+
+def read():
+    if proc is not None:
+        try:
+            _, err = proc.communicate()
+            return err
+        except ValueError as e: # the process is shut down elsewhere
+            return None
+    else:
+        raise RuntimeError("FastEventServer has not been launched")
 
 def shutdown():
     global proc
