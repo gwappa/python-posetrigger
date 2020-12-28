@@ -18,6 +18,8 @@ Launching Pose-Trigger
 .. note::
     When being run without a parameter, Pose-Trigger will use the device at ``/dev/video0`` by default. In case you want to use e.g. ``/dev/video1``, specify the device as the parameter, i.e. run ``pose-trigger /dev/video1``.
 
+    To check which path corresponds to your camera, please refer to the :doc:`Appendix <paths>`.
+
 Organization of the main window
 --------------------------------
 
