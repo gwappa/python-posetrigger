@@ -42,6 +42,7 @@ Flashing Arduino-fasteventoutput to a UNO clone
 ------------------------------------------------
 
 This method makes use of the `arduino-fasteventtrigger`_ project.
+Use the ``leonardo`` driver to use a board of this type from FastEventServer.
 
 By using this method, the trigger-output latency will go down to the sub-millisecond order. Nevertheless, it takes some additional procedures to follow.
 
@@ -76,10 +77,43 @@ First find the ``Arduino-fasteventoutput.hex`` binary from the ``libraries`` dir
 
     Check that the UNO board appears again under the ``/dev`` directory.
 
+After the procedures, you can use the board as the ``leonardo``-type output board.
+
+The trigger comes out of the ``PB1`` pin of the 6-pin ATmega16U2 header:
+
+.. figure:: ../../resources/header-pinout.png
+    :scale: 80%
+    :align: center
+
+    The location of the ``PB1`` pin.
+
 .. note::
 
-	by writing ``fasteventoutput`` to the Arduino board, **it cannot be used any more as an Arduino**.
+    By writing ``fasteventoutput`` to the Arduino board, **it cannot be used any more as an Arduino**.
 
     In case you want to "resume" the Arduino functionalities, write back the `official Arduino firmware <https://github.com/arduino/ArduinoCore-avr/tree/master/firmwares/atmegaxxu2>`_ using ``dfu-programmer`` again by following the same procedures.
+
+Testing the board using the serial commands
+--------------------------------------------
+
+You can test the boards by sending the single-character commands **without launching FastEventServer** (e.g. through `the serial monitor of the Arduino app <https://arduinogetstarted.com/tutorials/arduino-serial-monitor>`_).
+
+The setting of the console:
+
+* **Serial port**: Your Arduino board
+* **Baud rate**: 230400 baud (it matters only when you use the sketch)
+* **Newline**: "No line ending" (the board ignores the newline characters anyway)
+
+.. table:: List of serial commands
+
+    ========== ========== =======================
+    Name       Character  Description
+    ========== ========== =======================
+    ``CLEAR``  ``H``      Set the output to LOW
+    ``EVENT``  ``L``      Set the output to HIGH
+    ========== ========== =======================
+
+Note that the command characters themselves do not really mean HIGH/LOW.
+On the side of the output board, in reality, it applies the bit flag `0x04` to the command to determine the output.
 
 .. _arduino-fasteventtrigger: https://doi.org/10.5281/zenodo.3515998
