@@ -50,7 +50,7 @@ Pose-Trigger is designed to work in a closed-loop experiment setup,
 where a single PC acquires video frames from the camera and
 generates trigger output based on the behavior of the subject.
 
-For more detailed system requirements, refer to the :ref:`System requirements <requirements>` section.
+For more detailed system requirements, refer to the :doc:`System requirements <requirements>` section.
 
 
 The main acquisition loop

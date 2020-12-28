@@ -1,6 +1,3 @@
 [submodule "libraries/source/arduino-fasteventtrigger"]
 	path = libraries/source/arduino-fasteventtrigger
 	url = https://github.com/gwappa/arduino-fasteventtrigger.git
-[submodule "libraries/source/FastEventServer"]
-	path = libraries/source/FastEventServer
-	url = https://github.com/gwappa/FastEventServer.git

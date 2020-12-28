@@ -1,5 +1,5 @@
-Appendix: FastEventServer
-=========================
+Appendix: Compiling FastEventServer
+====================================
 
 .. contents:: Contents
    :local:
