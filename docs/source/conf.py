@@ -19,11 +19,11 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'Pose-Trigger'
-copyright = '2020, Keisuke Sehara, Paul Zimmer-Harwood'
+copyright = 'CC0 1.0 Universal (CC0 1.0) Public Domain Dedication'
 author = 'Keisuke Sehara, Paul Zimmer-Harwood'
 
 # The full version, including alpha/beta/rc tags
-release = 'v1.0.0'
+release = 'v1.1.0'
 
 
 # -- General configuration ---------------------------------------------------

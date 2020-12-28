@@ -1,3 +1,2 @@
-include pyproject.toml
-include *.adoc
+include *.md
 include LICENSE
