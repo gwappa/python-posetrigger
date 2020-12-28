@@ -44,13 +44,19 @@ BINARY_DIR = _Path(__file__).parent / "bin"
 config = None
 
 def get_cpu_arch():
-    return "x86_64" # FIXME
+    src = _sp.run(["lscpu"], capture_output=True, check=True).stdout.decode("utf-8")
+    tag  = "Architecture:"
+    for line in src.split("\n"):
+        if line.startswith(tag):
+            return line.replace(tag, "").strip()
+    raise RuntimeError("failed to find the architecture info")
 
 def get_binary_path():
     arch = get_cpu_arch()
     path = BINARY_DIR / f"FastEventServer_linux_{arch}"
     if not path.exists():
         raise FileNotFoundError(f"FastEventServer binary for the architecture '{arch}' does not exist")
+    return path
 
 def initialize():
     global config
@@ -115,7 +121,7 @@ def launch():
         initialize()
     binpath = get_binary_path()
     if proc is None:
-        print("launching FastEventServer...")
+        print(f"launching FastEventServer: {binpath.name} {CONFIG_PATH}")
         proc = _sp.Popen([str(binpath), str(CONFIG_PATH)], bufsize=1)
         _time.sleep(0.5)
 
