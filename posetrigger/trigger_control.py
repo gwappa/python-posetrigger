@@ -23,6 +23,8 @@
 #
 
 from pathlib import Path
+from traceback import print_exc
+
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from . import debug as _debug
 from . import trigger as _trigger
@@ -157,21 +159,49 @@ class TriggerControl(QtWidgets.QGroupBox):
             self._model.updateOutput(self._tester.isChecked())
 
     def updateWithAcquisition(self, mode, acq):
-        if self._model is not None:
+        if self._model is None:
+            if mode != "":
+                acq.setStaticMetadata("trigger", None)
+        else:
             self._model.updateWithAcquisition(mode, acq)
 
     def teardown(self):
         self.disconnect()
 
+class InteractiveFieldMixin:
+    def __init__(self, *args, **kwargs):
+        self.clearDirty()
+        self.returnPressed.connect(self.commitValue)
+        self.textChanged.connect(self.setDirty)
+
+    def setDirty(self, current):
+        self.setStyleSheet("color: red")
+
+    def clearDirty(self):
+        self.setStyleSheet("")
+
+    def commitValue(self):
+        self.value = self.text()
+
 class DriverSelector(QtWidgets.QComboBox):
+    DRIVER_TYPES = ("uno", "leonardo", "dummy", "dummy-verbose")
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        for item in ("uno", "leonardo", "dummy", "dummy-verbose"):
+        for item in self.DRIVER_TYPES:
             self.addItem(item)
         self.setEditable(False)
         self.setCurrentText(_service.get_driver_type())
+        self.currentTextChanged.connect(self.updateWithSelection)
 
-class PortEditor(QtWidgets.QLineEdit):
+    def updateWithSelection(self, value):
+        try:
+            _service.set_driver_type(value)
+        except Exception as e:
+            print_exc()
+            QtWidgets.QMessageBox.warning(self, "Failed to specify the driver type", f"{e}")
+
+class PortEditor(QtWidgets.QLineEdit, InteractiveFieldMixin):
     def __init__(self, parent=None):
         super().__init__(str(self.value), parent=parent)
 
@@ -179,10 +209,29 @@ class PortEditor(QtWidgets.QLineEdit):
     def value(self):
         return _service.get_udp_port()
 
-class SerialEditor(QtWidgets.QLineEdit):
+    @value.setter
+    def value(self, value):
+        try:
+            _service.set_udp_port(int(value))
+            self.clearDirty()
+        except Exception as e:
+            print_exc()
+            QtWidgets.QMessageBox.warning(self, "Failed to specify the UDP port", f"{e}")
+
+class SerialEditor(QtWidgets.QLineEdit, InteractiveFieldMixin):
+
     def __init__(self, parent=None):
         super().__init__(self.value, parent=parent)
 
     @property
     def value(self):
         return _service.get_serial_port()
+
+    @value.setter
+    def value(self, value):
+        try:
+            _service.set_serial_port(str(value))
+            self.clearDirty()
+        except Exception as e:
+            print_exc()
+            QtWidgets.QMessageBox.warning(self, "Failed to specify the serial device", f"{e}")

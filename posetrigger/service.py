@@ -89,6 +89,7 @@ def set_driver_type(value):
     if config is None:
         initialize()
     config["driver"] = str(value)
+    update()
 
 def get_udp_port():
     global config
@@ -101,6 +102,7 @@ def set_udp_port(value):
     if config is None:
         initialize()
     config["port"] = int(value)
+    update()
 
 def get_serial_port():
     global config
@@ -113,6 +115,7 @@ def set_serial_port(value):
     if config is None:
         initialize()
     config["options"]["port"] = str(value)
+    update()
 
 def launch():
     global config
@@ -166,3 +169,4 @@ def load():
 def update():
     with open(CONFIG_PATH, "w") as out:
         _json.dump(config, out, indent=4)
+    print(f"FastEventServer config: {config}")
