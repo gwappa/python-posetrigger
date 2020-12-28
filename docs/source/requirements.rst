@@ -17,7 +17,9 @@ Before installing Pose-Trigger, make sure you have set up the following hardware
 
 3. For a faster working of DeepLabCut, **NVIDIA graphics board with a large amount of RAM** is required.
 
-    .. note:: For example, running DeepLabCut on ResNet-50 requires ~10.6 GB of RAM,
+    .. note::
+
+        For example, running DeepLabCut on ResNet-50 requires ~10.6 GB of RAM,
         so we use `GeForce RTX 2080 Ti`_ that has 11 GB on-board RAM (refer to the :ref:`Reference setup`).
 
 

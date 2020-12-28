@@ -140,6 +140,7 @@ The terminal console behind the Pose-Trigger app should log the output from Fast
     What the panel will look like after launching FastEventServer
 
 .. caution::
+    
     For the time being, any errors on the startup of the FastEventServer program
     **will not be reported until it shuts down**.
 
@@ -149,7 +150,7 @@ The terminal console behind the Pose-Trigger app should log the output from Fast
 
     .. code-block:: Bash
 
-        ***failed to ...
+        ***failed to initialize the output driver: ...
 
     This seems to be the bug on FastEventServer (will be fixed at some point in the future).
 

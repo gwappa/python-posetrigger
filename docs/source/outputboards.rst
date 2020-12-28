@@ -1,5 +1,5 @@
-Appendix: Preparing an Output Board
-===================================
+Preparing an Output Board
+==========================
 
 .. contents:: Contents
    :local:

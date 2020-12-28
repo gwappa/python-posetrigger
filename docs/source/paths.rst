@@ -1,4 +1,4 @@
-Appendix: checking the paths to your devices
+Appendix: Checking the paths to your devices
 =============================================
 
 .. contents:: Contents
