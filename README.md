@@ -15,5 +15,6 @@ of TTL trigger generation based on the pose of the subject.
 ## License
 
 - Code files in this repository: 2020 Keisuke Sehara and Paul Zimmer-Harwood, the MIT License
-- Binaries in the [libraries](libraries) directory: refer to documents in the source repositories
+- [FastEventServer](https://doi.org/10.5281/zenodo.3843623): 2019 Keisuke Sehara, the MIT License
+- [arduino-fasteventtrigger](https://doi.org/10.5281/zenodo.3515998): 2019 Keisuke Sehara, the MIT License
 - Contents of the [resources](resources) and [docs](docs) directory, including the documentation: Creative Commons CC0 1.0 Universal Public Domain Dedication
