@@ -1,5 +1,7 @@
 # Pose-Trigger
 
+[![DOI](https://zenodo.org/badge/268803835.svg)](https://zenodo.org/badge/latestdoi/268803835)
+
 Pose-Trigger is a python application for real-time, closed-loop application
 of TTL trigger generation based on the pose of the subject.
 
@@ -18,3 +20,5 @@ of TTL trigger generation based on the pose of the subject.
 - [FastEventServer](https://doi.org/10.5281/zenodo.3843623): 2019 Keisuke Sehara, the MIT License
 - [arduino-fasteventtrigger](https://doi.org/10.5281/zenodo.3515998): 2019 Keisuke Sehara, the MIT License
 - Contents of the [resources](resources) and [docs](docs) directory, including the documentation: Creative Commons CC0 1.0 Universal Public Domain Dedication
+
+You can cite `pose-trigger` as https://doi.org/10.5281/zenodo.4459344
