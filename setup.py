@@ -38,8 +38,9 @@ setuptools.setup(
     author='Keisuke Sehara',
     author_email='keisuke.sehara@gmail.com',
     license='MIT',
+    python_requires='>=3.7',
     install_requires=['numpy', 'matplotlib', 'opencv-python', 'pyqtgraph',
-                      'timedcapture>=0.2',],
+                      'timedcapture>=0.3.2',],
     extras_require={
         "dlc": ['dlclib>=1.0.3',],
     },
