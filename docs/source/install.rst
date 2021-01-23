@@ -15,7 +15,10 @@ Find the environment file ``posetrigger.yaml`` from the repository, and run the 
 You can change the name of the environment by giving the alternative as ``conda env create -n <name> -f posetrigger.yaml``.
 
 .. note::
-    Upon the public release of Pose-Trigger in the future, ``timedcapture``, ``dlclib`` and ``pose-trigger`` packages will be made available in PyPI.
+
+    Please be noted that Python version must be equal or above 3.7.
+    Otherwise, some functionality won't work properly.
+    
 
 Hardware installation
 ----------------------
