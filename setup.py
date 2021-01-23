@@ -33,7 +33,7 @@ setuptools.setup(
     version=VERSION_STR,
     description='a python application for real-time, closed-loop application of TTL trigger generation based on the pose of the subject',
     long_description=long_description,
-    long_description_content_type="text/asciidoc",
+    long_description_content_type="text/markdown",
     url='https://github.com/gwappa/python-labvideocapture',
     author='Keisuke Sehara',
     author_email='keisuke.sehara@gmail.com',
