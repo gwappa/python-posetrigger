@@ -9,8 +9,8 @@ of TTL trigger generation based on the pose of the subject.
 
 ## Documentation
 
-- [On-line HTML version](#TODO)
-- [PDF version](pose-trigger-documentation.pdf)
+- [On-line HTML version](https://python-posetrigger.readthedocs.io/)
+- [PDF version](https://python-posetrigger.readthedocs.io/_/downloads/en/latest/pdf/)
 
 ## License
 

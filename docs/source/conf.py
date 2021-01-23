@@ -23,7 +23,7 @@ copyright = 'CC0 1.0 Universal (CC0 1.0) Public Domain Dedication'
 author = 'Keisuke Sehara, Paul Zimmer-Harwood'
 
 # The full version, including alpha/beta/rc tags
-release = 'v1.1.0'
+release = 'v1.1.1'
 
 
 # -- General configuration ---------------------------------------------------
