@@ -23,7 +23,7 @@ Launching Pose-Trigger
 Organization of the main window
 --------------------------------
 
-.. figure:: ../../resources/Layout_Overview.png
+.. figure:: ../../resources/Layout_overview.png
     :scale: 100%
 
     Overview of the main window
